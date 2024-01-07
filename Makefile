@@ -15,7 +15,7 @@ CFILES_TESTS = $(wildcard tests/*.c)
 OBJS_TESTS = $(CFILES_TESTS:.c=.o)
 OBJS_TESTS_DONE = $(addprefix $(BUILD_STR)/,$(CFILES_TESTS:.c=.o))
 
-CHECK_LIBS = -lcheck -lsubunit
+CHECK_LIBS = -lcheck -lsubunit -lm
 MY_LIB = build/s21_string.a
 
 all: s21_string
@@ -45,7 +45,7 @@ clean:
 rebuild: clean s21_string
 
 $(OBJS_STR_LIB): %.o: %.c
-	$(CC) $(CFLAGS) $(C11) -c $? -o $@
+	$(CC) $(CFLAGS) $(C11) -c $? -o build/$@
 
 $(OBJS_TESTS): %.o: %.c
-	$(CC) $(CFLAGS) $(C11) -c $? -o $@
+	$(CC) $(CFLAGS) $(C11) -c $? -o build/$@

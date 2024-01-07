@@ -9,6 +9,11 @@
 #include "../s21_string_lib/s21_string.h"
 
 Suite *suite_memchr(void);
+Suite *suite_memcmp(void);
+Suite *suite_memcpy(void);
+Suite *suite_memset (void);
+Suite *suite_strncat(void);
+
 void run_tests(void);
 void run_testcase(Suite *testcase);
 
