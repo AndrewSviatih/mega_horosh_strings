@@ -45,7 +45,7 @@ clean:
 rebuild: clean s21_string
 
 $(OBJS_STR_LIB): %.o: %.c
-	$(CC) $(CFLAGS) $(C11) -c $? -o build/$@
+	$(CC) $(CFLAGS) $(C11) -c $< -o build/$@
 
 $(OBJS_TESTS): %.o: %.c
-	$(CC) $(CFLAGS) $(C11) -c $? -o build/$@
+	$(CC) $(CFLAGS) $(C11) -c $< -o build/$@
