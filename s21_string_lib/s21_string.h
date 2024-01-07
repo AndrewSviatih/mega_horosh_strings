@@ -14,5 +14,6 @@ int s21_memcmp(const void *str1, const void *str2, size_t n);
 void *s21_memcpy(void *dest, const void *src, size_t n);
 void *s21_memset(void *dest, int c, size_t count);
 char *s21_strncat(char *dest, const char *src, size_t n);
+char *s21_strchr(const char *str, int c);
 
 #endif //STRING_S21_STRING_H

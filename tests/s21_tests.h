@@ -13,6 +13,7 @@ Suite *suite_memcmp(void);
 Suite *suite_memcpy(void);
 Suite *suite_memset (void);
 Suite *suite_strncat(void);
+Suite *suite_strchr(void);
 
 void run_tests(void);
 void run_testcase(Suite *testcase);
