@@ -27,10 +27,10 @@ void run_tests(void) {
     Suite *list_cases[] = {
             suite_memchr(), suite_memcmp(), suite_memcpy(), suite_memset(), 
             suite_strncat(), suite_strchr(), suite_strncmp(), suite_strncpy(), 
-            suite_strcspn(), NULL};
+            suite_strcspn(), suite_atoi(), NULL};
 
     for (Suite **current_testcase = list_cases; *current_testcase != NULL;
-         current_testcase++) {
+        current_testcase++) {
         run_testcase(*current_testcase);
     }
 }
