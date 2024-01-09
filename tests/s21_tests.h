@@ -19,8 +19,12 @@ Suite *suite_strncpy (void);
 Suite *suite_strcspn(void);
 Suite *suite_atoi(void);
 Suite *suite_strlen(void);
+Suite *suite_strerror(void);
+Suite *suite_strcpy(void);
+Suite *suite_strpbrk(void);
+Suite *suite_strstr(void);
 
 void run_tests(void);
-void run_testcase(Suite *testcase);
+void run_testcase(Suite *testcase, int counter_testcase);
 
 #endif  // SRC_TESTS_INCLUDES_S21_TESTS_H_
