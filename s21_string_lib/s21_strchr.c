@@ -4,7 +4,7 @@ char *s21_strchr(const char *str, int c){
 
     char *neededPtr = NULL;
 
-    for (size_t i = 0; i < strlen(str); i++){
+    for (size_t i = 0; i < s21_strlen(str); i++){
         if (c == str[i]){
             neededPtr = ((char *)str) + i;
             break;
