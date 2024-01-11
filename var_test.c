@@ -8,8 +8,9 @@
 int main() {
     char res[BUFF_SIZE];
 
-    int res_diff = s21_sprintf(res, "%s: %d + %d = %d", "Sum of", 2, 2, 2+2);
+    char *resk = "         d adssadasdd ad asd a";
+
+    sprintf(res, "%4-s", resk);
 
     printf("%s\n", res);
-    printf("%d\n", res_diff);
 }
