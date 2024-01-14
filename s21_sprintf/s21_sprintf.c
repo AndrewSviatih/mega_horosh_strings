@@ -93,7 +93,7 @@ const char *set_specs(Spec *specs, const char *format, va_list *input) {
     return format;
 }
 
-size_t get_size_to_decimal(Spec *specs, long int num){
+size_t get_size_of_decimal(Spec *specs, long int num){
 
     size_t res = 0;
 
@@ -110,33 +110,45 @@ size_t get_size_to_decimal(Spec *specs, long int num){
         res++;
     }
 
-    
-    
+    if ((size_t)specs->width > res) res = specs->width;
+    if ((size_t)specs->accurency > res) res = specs->accurency;
+
+    if (specs->space || specs->plus || num < 0) {
+        specs->flag_to_size = 1;
+        res++;
+    }
+    if (res == 0 && copy_num == 0 && !specs->width && specs->accurency && specs->dot && specs->space)
+        res++;
+
+    return res;
 }
 
-char *print_decimal(char *res, Spec specs, va_list *input){
+void print_decimal(char *res, Spec specs, va_list *input){
 
     long int num = 0;
 
     if (specs.length == 'l') {
         num = (long int)va_arg(*input, long int);
     } else if (specs.length == 'h') {
-        num = (short)va_arg(*input, short);
-    } else {
         num = (int)va_arg(*input, int);
+    } else {
+        num = (int) va_arg(*input, int);
     }
 
-    size_t size_to_decimal = get_size_to_decimal(&specs, num);
-
+    size_t size_to_decimal = get_size_of_decimal(&specs, num);
+    printf("%ld ", size_to_decimal);
     char *str_to_num = malloc(sizeof(char) * size_to_decimal);
+
+    if (str_to_num) {
+        i = decimal_to_string()
+    }
+    // FINISH THIS
+    return
 }
 
 char *parser(char *res, char *res_begining, const char *format, Spec specs, va_list *input){
-
-    if (*format == 'd' || *format == 'd') {
-        res = printf_decimal();
-    }
-
+    print_decimal(res, specs, input);
+    return res;
 }
 
 int s21_sprintf(char *res, const char *format, ...){
@@ -155,7 +167,7 @@ int s21_sprintf(char *res, const char *format, ...){
             specs.number_system = 10;
             format = set_specs(&specs, format, &input);
             while (!strchr(specifiers, *format)) format++;
-            // res = parser();
+            res = parser(res, start, format, specs, &input);
         } else {
             *res = *format;
             res++;
@@ -171,7 +183,8 @@ int s21_sprintf(char *res, const char *format, ...){
 
 int main() {
 
-    char format[256] = "%+-014.6hd adsdsa: %ld dsaads: %s %x";
+//    "%+-014.6hd adsdsa: %ld dsaads: %s %x";
+    char format[256] = "%+-014.6hd";
     char str[256];
 
     int res = s21_sprintf(str, format, 24, 241, "dsaas", 1);
