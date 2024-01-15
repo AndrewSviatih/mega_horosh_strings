@@ -117,13 +117,35 @@ size_t get_size_of_decimal(Spec *specs, long int num){
         specs->flag_to_size = 1;
         res++;
     }
-    if (res == 0 && copy_num == 0 && !specs->width && specs->accurency && specs->dot && specs->space)
-        res++;
+    if (res == 0 && copy_num == 0 && !specs->width &&
+        specs->accurency && specs->dot && specs->space) res++;
 
     return res;
 }
 
-void print_decimal(char *res, Spec specs, va_list *input){
+int decimal_to_string(Spec specs, char *format, va_list *input, long int num, size_t size_to_decimal){
+
+    int flag = 0;
+
+    if (num < 0){
+        num = -num;
+    }
+
+    int i = 0;
+    long int copy_num = num;
+
+    if ((copy_num == 0 && (specs.accurency || specs.width || specs.dot)) ||
+        (copy_num == 0 && (!specs.accurency && !specs.width && specs.space && specs.dot))){
+
+        char symb = copy_num % specs.number_system - '0';
+        format[i] = size_to_decimal;
+        i++;
+        size_to_decimal--;
+        copy_num /= 10;
+    }
+}
+
+char *print_decimal(char *res, Spec specs, va_list *input){
 
     long int num = 0;
 
@@ -136,7 +158,6 @@ void print_decimal(char *res, Spec specs, va_list *input){
     }
 
     size_t size_to_decimal = get_size_of_decimal(&specs, num);
-    printf("%ld ", size_to_decimal);
     char *str_to_num = malloc(sizeof(char) * size_to_decimal);
 
     if (str_to_num) {
