@@ -117,13 +117,44 @@ size_t get_size_of_decimal(Spec *specs, long int num){
         specs->flag_to_size = 1;
         res++;
     }
-    if (res == 0 && copy_num == 0 && !specs->width &&
-        specs->accurency && specs->dot && specs->space) res++;
+    if (res == 0 && copy_num == 0 && !specs->accurency && !specs->width && !specs->space && !specs->dot) 
+        res++;
 
     return res;
 }
 
-int decimal_to_string(Spec specs, char *format, va_list *input, long int num, size_t size_to_decimal){
+char get_num_char(int num, int upper_case){
+    char flag = '0';
+    switch (num)
+    {
+    case 10:
+        flag = (char)('a' - upper_case * 32);
+        break;
+    case 11:
+        flag = (char)('b' - upper_case * 32);
+        break;
+    case 12:
+        flag = (char)('c' - upper_case * 32);
+        break;
+    case 13:
+        flag = (char)('d' - upper_case * 32);
+        break;
+    case 14:
+        flag = (char)('e' - upper_case * 32);
+        break;
+    case 15:
+        flag = (char)('f' - upper_case * 32);
+        break;
+    default:
+        break;
+    }
+
+    if (num >= 0 && num <= 9) flag = (char)(num + 48);
+
+    return flag;
+}
+
+int decimal_to_string(Spec specs, char *str_to_num, long int num, size_t size_to_decimal){
 
     int flag = 0;
 
@@ -133,16 +164,72 @@ int decimal_to_string(Spec specs, char *format, va_list *input, long int num, si
 
     int i = 0;
     long int copy_num = num;
-
-    if ((copy_num == 0 && (specs.accurency || specs.width || specs.dot)) ||
-        (copy_num == 0 && (!specs.accurency && !specs.width && specs.space && specs.dot))){
+// в функцию
+    if ((copy_num == 0 && (specs.accurency || specs.width || specs.space)) ||
+        (copy_num == 0 && (!specs.accurency && !specs.width && !specs.space && !specs.dot))){
 
         char symb = copy_num % specs.number_system - '0';
-        format[i] = size_to_decimal;
+        str_to_num[i] = symb;
         i++;
         size_to_decimal--;
         copy_num /= 10;
     }
+
+    while (copy_num && str_to_num && size_to_decimal){
+        char sym = get_num_char(copy_num % specs.number_system, specs.upper_case);
+        str_to_num[i] = sym;
+        i++;
+        size_to_decimal--;
+        copy_num /= 10;
+    }
+
+    if (flag) num = -num;
+// в функцию
+    if (specs.accurency - i > 0) {
+        specs.accurency -= i;
+        specs.zero = 1;
+    } else {
+        flag = 1;
+    }
+
+    if (size_to_decimal == 1 && specs.zero == 1 && specs.flag_to_size == 1) 
+        specs.zero = 0;
+// в функцию
+    while (specs.zero && str_to_num && (size_to_decimal - specs.flag_to_size > 0) && (specs.accurency || flag)) {
+        if ((size_to_decimal == 1 && specs.flag_to_size == 1))
+            break;
+
+        str_to_num[i] = '0';
+        size_to_decimal--;
+        specs.accurency--;
+        i++;
+    }
+// в функцию
+    if (specs.space && num >= 0 && size_to_decimal){
+        str_to_num[i] = ' ';
+        i++;
+        size_to_decimal--;
+    }
+    if (num < 0 && size_to_decimal) {
+        str_to_num[i] = '-';
+        i++;
+        size_to_decimal--;
+    }
+    if (num > 0 && specs.plus && size_to_decimal) {
+        str_to_num[i] = '+';
+        i++;
+        size_to_decimal--;
+    }
+
+    if (size_to_decimal > 0 && specs.minus == 0) {
+        while ((size_to_decimal - specs.flag_to_size > 0) && str_to_num) {
+            str_to_num[i] = ' ';
+            i++;
+            size_to_decimal--;
+        }
+    }
+
+    return i;
 }
 
 char *print_decimal(char *res, Spec specs, va_list *input){
@@ -161,14 +248,32 @@ char *print_decimal(char *res, Spec specs, va_list *input){
     char *str_to_num = malloc(sizeof(char) * size_to_decimal);
 
     if (str_to_num) {
-        i = decimal_to_string()
+        // в обратную сторону пуляем
+        int i = decimal_to_string(specs, str_to_num, num, size_to_decimal);
+        // делаем зеркальное пространство наоборот как во мстителях
+        for (int j = i - 1; j >= 0; j--){
+            *res = str_to_num[j];
+            res++;
+        }
+        // если кто то вдруг решил сделать ширину без '-', то заполняем дальше пробелы, зочем????????
+        while ((i < specs.width)){
+            *res = ' ';
+            res++;
+        }
     }
-    // FINISH THIS
-    return
+
+    if (str_to_num) free(str_to_num);
+
+    return res;
 }
 
 char *parser(char *res, char *res_begining, const char *format, Spec specs, va_list *input){
-    print_decimal(res, specs, input);
+
+    if (*format == 'd' || *format == 'i'){
+        res = print_decimal(res, specs, input);
+    }
+    
+    // printf("%s", res_begining);
     return res;
 }
 
@@ -205,10 +310,11 @@ int s21_sprintf(char *res, const char *format, ...){
 int main() {
 
 //    "%+-014.6hd adsdsa: %ld dsaads: %s %x";
-    char format[256] = "%+-014.6hd";
-    char str[256];
+// "%+-014.6hd"
+    char res[256];
 
-    int res = s21_sprintf(str, format, 24, 241, "dsaas", 1);
-    printf("%d", res);
-
+    int res_diff_count = s21_sprintf(res, "%d", 12);
+    printf("%s\n", res);
+    printf("%d\n", res_diff_count);
+    // printf("%+-014.6hd", 123);
 }
