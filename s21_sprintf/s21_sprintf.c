@@ -273,7 +273,7 @@ char *parser(char *res, char *res_begining, const char *format, Spec specs, va_l
         res = print_decimal(res, specs, input);
     }
     
-    // printf("%s", res_begining);
+    printf("%s\n", res_begining);
     return res;
 }
 
@@ -311,10 +311,10 @@ int main() {
 
 //    "%+-014.6hd adsdsa: %ld dsaads: %s %x";
 // "%+-014.6hd"
-    char res[256];
-
-    int res_diff_count = s21_sprintf(res, "%d", 12);
+    char res[256] = "";
+//
+    int res_diff_count = s21_sprintf(res, "%+-14.6hd", 123);
     printf("%s\n", res);
     printf("%d\n", res_diff_count);
-    // printf("%+-014.6hd", 123);
+    printf("%+-14.6hd", 123);
 }
