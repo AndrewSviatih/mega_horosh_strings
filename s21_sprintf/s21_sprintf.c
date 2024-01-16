@@ -259,6 +259,7 @@ char *print_decimal(char *res, Spec specs, va_list *input){
         while ((i < specs.width)){
             *res = ' ';
             res++;
+            i++;
         }
     }
 
@@ -271,9 +272,11 @@ char *parser(char *res, char *res_begining, const char *format, Spec specs, va_l
 
     if (*format == 'd' || *format == 'i'){
         res = print_decimal(res, specs, input);
+    } else if (*format == 'd' || *format == 'o' || *format == 'x' || *format == 'X') {
+        
     }
     
-    printf("%s\n", res_begining);
+    // printf("%s\n", res_begining);
     return res;
 }
 
@@ -310,11 +313,19 @@ int s21_sprintf(char *res, const char *format, ...){
 int main() {
 
 //    "%+-014.6hd adsdsa: %ld dsaads: %s %x";
+
+//   не прошло тесты:  int res_diff_count = s21_sprintf(res, "%+-3.6hd", 123213); sprintf(res2, "%+-3.6hd", 123213);
+
 // "%+-014.6hd"
+
     char res[256] = "";
-//
-    int res_diff_count = s21_sprintf(res, "%+-14.6hd", 123);
-    printf("%s\n", res);
-    printf("%d\n", res_diff_count);
-    printf("%+-14.6hd", 123);
+    char res2[256] = "";
+
+    int res_diff_count = s21_sprintf(res, "%+34.6ld", 12133212313123);
+    sprintf(res2, "%+34.6ld", 12133212313123);
+
+    printf("%s|\n", res2);
+    printf("%s|\n", res);
+    // printf("%d\n", res_diff_count);
+    
 }
