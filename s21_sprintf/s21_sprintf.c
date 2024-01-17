@@ -279,10 +279,108 @@ Spec set_number_system(Spec specs, char format){
     return specs;
 }
 
-size_t get_buff_size_hex(Spec specs, unsigned long int num){
+size_t get_buff_size_hex(Spec *specs, unsigned long int num){
 
-    
+    size_t res = 0;
 
+    unsigned long int copy_num = num;
+
+    if (specs->number_system == 8){
+        while (copy_num > 0) {
+            copy_num /= 8;
+            res++;
+        }
+        if (specs->hash) res++;
+    } else if (specs->number_system == 16) {
+        while (copy_num > 0) {
+            copy_num /= 16;
+            res++;
+        }
+        if (specs->hash) res += 2;
+    } else {
+        while (copy_num > 0) {
+            copy_num /= 10;
+            res++;
+        }
+    }
+
+    if (copy_num == 0 && res == 0 && (specs->accurency || specs->width || specs->space)) {
+        res++;
+    }
+
+    if ((size_t)specs->width > res) res = specs->width;
+    if ((size_t)specs->accurency > res) res = specs->accurency;
+
+    if (res == 0 && copy_num == 0 && !specs->accurency && !specs->width && !specs->space && !specs->dot)
+        res++;
+
+    printf("%zu\n", res);
+    return res;
+}
+
+int u_o_x_X_to_string(char *str_to_num, Spec specs, unsigned long int num, size_t size_to_decimal) {
+
+    int flag = 0;
+    int i = 0;
+    unsigned long int copy_num = num;
+
+    if (specs.hash && specs.number_system == 8) {
+        specs.flag_to_size = 1;
+    } else if (specs.hash && specs.number_system == 16) {
+        specs.flag_to_size = 2;
+    }
+// в функцию
+    while (copy_num && str_to_num && size_to_decimal) {
+        char sym = get_num_char(copy_num % specs.number_system, specs.upper_case);
+        str_to_num[i] = sym;
+        i++;
+        size_to_decimal--;
+        copy_num /= 10;
+    }
+
+    if (flag) num = -num;
+// в функцию
+    if (specs.accurency - i > 0) {
+        specs.accurency -= i;
+        specs.zero = 1;
+    } else {
+        flag = 1;
+    }
+
+    if (size_to_decimal == 1 && specs.zero == 1 && specs.flag_to_size == 1)
+        specs.zero = 0;
+// в функцию
+    while (specs.zero && str_to_num && (size_to_decimal - specs.flag_to_size > 0) && (specs.accurency || flag)) {
+        if ((size_to_decimal == 1 && specs.flag_to_size == 1))
+            break;
+
+        str_to_num[i] = '0';
+        size_to_decimal--;
+        specs.accurency--;
+        i++;
+    }
+
+    if (specs.hash && specs.number_system == 8) {
+        str_to_num[i] = '0';
+        i++;
+        size_to_decimal--;
+    } else if (specs.hash && specs.number_system == 16) {
+        if (specs.upper_case) {
+            str_to_num[i] = 'X';
+            i++;
+            str_to_num[i] = '0';
+            i++;
+            size_to_decimal -= 2;
+        } else if (!specs.upper_case) {
+            str_to_num[i] = 'x';
+            i++;
+            str_to_num[i] = '0';
+            i++;
+            size_to_decimal -= 2;
+        }
+    }
+
+    return i;
 }
 
 char *print_hex(char *res, Spec specs, char format, va_list *input){
@@ -291,17 +389,19 @@ char *print_hex(char *res, Spec specs, char format, va_list *input){
     if (specs.length == 'l') {
         num = (unsigned long int)va_arg(*input, unsigned long int);
     } else if (specs.length == 'h') {
-        num = (unsigned short)va_arg(*input, unsigned short);
+        num = (unsigned int)va_arg(*input, unsigned int);
     } else {
         num = (unsigned int)va_arg(*input, unsigned int);
     }
 
-    size_t size_to_num = get_buff_size_hex(specs, num);
+    size_t size_to_num = get_buff_size_hex(&specs, num);
     char *buffer = malloc(sizeof(char) * size_to_num);
 
+    int i = u_o_x_X_to_string(buffer, specs, num, size_to_num);
 
+    free(buffer);
 
-
+    return ;
 }
 
 char *parser(char *res, char *res_begining, const char *format, Spec specs, va_list *input){
@@ -312,8 +412,6 @@ char *parser(char *res, char *res_begining, const char *format, Spec specs, va_l
         specs = set_number_system(specs, *format);
         res = print_hex(res, specs, *(format - 1), input);
     }
-    
-    // printf("%s\n", res_begining);
     return res;
 }
 
@@ -358,8 +456,8 @@ int main() {
     char res[256] = "";
     char res2[256] = "";
 
-    int res_diff_count = s21_sprintf(res2, "%x", 0xfff);
-    sprintf(res2, "%x", 0xfff);
+    int res_diff_count = s21_sprintf(res2, "%o", 0211);
+    sprintf(res2, "%o", 0211);
 
     printf("%s|\n", res2);
     printf("%s|\n", res);
