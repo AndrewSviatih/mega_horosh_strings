@@ -268,12 +268,49 @@ char *print_decimal(char *res, Spec specs, va_list *input){
     return res;
 }
 
+Spec set_number_system(Spec specs, char format){
+    if (format == 'o') {
+        specs.number_system = 8;
+    } else if (format == 'x' || format == 'X'){
+        specs.number_system = 16;
+    } 
+    if (format == 'X') specs.upper_case = 1;
+
+    return specs;
+}
+
+size_t get_buff_size_hex(Spec specs, unsigned long int num){
+
+    
+
+}
+
+char *print_hex(char *res, Spec specs, char format, va_list *input){
+
+    unsigned long int num = 0;
+    if (specs.length == 'l') {
+        num = (unsigned long int)va_arg(*input, unsigned long int);
+    } else if (specs.length == 'h') {
+        num = (unsigned short)va_arg(*input, unsigned short);
+    } else {
+        num = (unsigned int)va_arg(*input, unsigned int);
+    }
+
+    size_t size_to_num = get_buff_size_hex(specs, num);
+    char *buffer = malloc(sizeof(char) * size_to_num);
+
+
+
+
+}
+
 char *parser(char *res, char *res_begining, const char *format, Spec specs, va_list *input){
 
     if (*format == 'd' || *format == 'i'){
         res = print_decimal(res, specs, input);
-    } else if (*format == 'd' || *format == 'o' || *format == 'x' || *format == 'X') {
-        
+    } else if (*format == 'u' || *format == 'o' || *format == 'x' || *format == 'X') {
+        specs = set_number_system(specs, *format);
+        res = print_hex(res, specs, *(format - 1), input);
     }
     
     // printf("%s\n", res_begining);
@@ -321,8 +358,8 @@ int main() {
     char res[256] = "";
     char res2[256] = "";
 
-    int res_diff_count = s21_sprintf(res, "%+34.6ld", 12133212313123);
-    sprintf(res2, "%+34.6ld", 12133212313123);
+    int res_diff_count = s21_sprintf(res2, "%x", 0xfff);
+    sprintf(res2, "%x", 0xfff);
 
     printf("%s|\n", res2);
     printf("%s|\n", res);
