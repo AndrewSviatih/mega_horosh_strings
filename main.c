@@ -6,7 +6,9 @@ int main(void) {
     return 0;
 }
 
-void run_testcase(Suite *testcase, int counter_testcase) {
+void run_testcase(Suite *testcase) {
+    setlocale(LC_ALL, "");
+    static int counter_testcase = 1;
 
     if (counter_testcase > 1)
         putchar('\n');
@@ -23,17 +25,15 @@ void run_testcase(Suite *testcase, int counter_testcase) {
 
 void run_tests(void) {
 
-    int counter_testcase = 0;
-
     Suite *list_cases[] = {
             suite_memchr(), suite_memcmp(), suite_memcpy(), suite_memset(), 
             suite_strncat(), suite_strchr(), suite_strncmp(), suite_strncpy(), 
             suite_strcspn(), suite_atoi(), suite_strlen(), suite_strerror(), 
-            suite_strcpy(), suite_strpbrk(), suite_strstr(), suite_strtok(), NULL};
+            suite_strcpy(), suite_strpbrk(), suite_strstr(), suite_strtok(), 
+            suite_sprintf(), NULL};
 
     for (Suite **current_testcase = list_cases; *current_testcase != NULL;
         current_testcase++) {
-        run_testcase(*current_testcase, counter_testcase);
-        counter_testcase++;
+        run_testcase(*current_testcase);
     }
 }

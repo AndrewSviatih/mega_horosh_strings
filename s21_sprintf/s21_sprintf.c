@@ -146,10 +146,13 @@ char get_num_char(int num, int upper_case){
         flag = (char)('f' - upper_case * 32);
         break;
     default:
+        if (num <= 9) {
+            flag = (char)(num + 48);
+        } else if (num >= 16 && num <= 31) { // Восьмеричные числа
+            flag = (char)(num + 55);
+        }
         break;
     }
-
-    if (num >= 0 && num <= 9) flag = (char)(num + 48);
 
     return flag;
 }
@@ -282,25 +285,32 @@ Spec set_number_system(Spec specs, char format){
 size_t get_buff_size_hex(Spec *specs, unsigned long int num){
 
     size_t res = 0;
+    int flag_if_0 = 0;
 
     unsigned long int copy_num = num;
 
-    if (specs->number_system == 8){
-        while (copy_num > 0) {
-            copy_num /= 8;
-            res++;
-        }
-        if (specs->hash) res++;
-    } else if (specs->number_system == 16) {
-        while (copy_num > 0) {
-            copy_num /= 16;
-            res++;
-        }
-        if (specs->hash) res += 2;
-    } else {
-        while (copy_num > 0) {
-            copy_num /= 10;
-            res++;
+    if (copy_num == 0) {
+        res++;
+        flag_if_0 = 1;
+    }
+    if (!flag_if_0) {
+        if (specs->number_system == 8){
+            while (copy_num > 0) {
+                copy_num /= 8;
+                res++;
+            }
+            if (specs->hash) res++;
+        } else if (specs->number_system == 16) {
+            while (copy_num > 0) {
+                copy_num /= 16;
+                res++;
+            }
+            if (specs->hash) res += 2;
+        } else {
+            while (copy_num > 0) {
+                copy_num /= 10;
+                res++;
+            }
         }
     }
 
@@ -330,22 +340,41 @@ int u_o_x_X_to_string(char *str_to_num, Spec specs, unsigned long int num, size_
         specs.flag_to_size = 2;
     }
 // в функцию
-    while (copy_num && str_to_num && size_to_decimal) {
-        char sym = get_num_char(copy_num % specs.number_system, specs.upper_case);
-        str_to_num[i] = sym;
+// фикс 0 в начале но мб будет проблема
+    if ((copy_num == 0 && (specs.accurency || specs.width || specs.space)) ||
+        (copy_num == 0 && (!specs.accurency && !specs.width && !specs.space && !specs.dot))){
+
+        char symb = '0';
+        flag++;
+        str_to_num[i] = symb;
         i++;
         size_to_decimal--;
         copy_num /= 10;
     }
 
-    if (flag) num = -num;
+    while (copy_num && str_to_num && size_to_decimal) {
+        char sym = get_num_char(copy_num % specs.number_system, specs.upper_case);
+        str_to_num[i] = sym;
+        i++;
+        size_to_decimal--;
+        if (specs.number_system == 8) {
+            copy_num /= 8;
+        } else if (specs.number_system == 16) {
+            copy_num /= 16;
+        } else {
+            copy_num /= 10;
+        }
+    }
+
+    // if (flag) num = -num; не уверен но по идее не над
 // в функцию
     if (specs.accurency - i > 0) {
         specs.accurency -= i;
         specs.zero = 1;
-    } else {
-        flag = 1;
-    }
+    } 
+    // else { но мб не надо было
+    //     flag = 1;
+    // }
 
     if (size_to_decimal == 1 && specs.zero == 1 && specs.flag_to_size == 1)
         specs.zero = 0;
@@ -360,30 +389,40 @@ int u_o_x_X_to_string(char *str_to_num, Spec specs, unsigned long int num, size_
         i++;
     }
 
-    if (specs.hash && specs.number_system == 8) {
-        str_to_num[i] = '0';
-        i++;
-        size_to_decimal--;
-    } else if (specs.hash && specs.number_system == 16) {
-        if (specs.upper_case) {
-            str_to_num[i] = 'X';
-            i++;
+    if (!flag) {
+        if (specs.hash && specs.number_system == 8) {
             str_to_num[i] = '0';
             i++;
-            size_to_decimal -= 2;
-        } else if (!specs.upper_case) {
-            str_to_num[i] = 'x';
+            size_to_decimal--;
+        } else if (specs.hash && specs.number_system == 16) {
+            if (specs.upper_case) {
+                str_to_num[i] = 'X';
+                i++;
+                str_to_num[i] = '0';
+                i++;
+                size_to_decimal -= 2;
+            } else if (!specs.upper_case) {
+                str_to_num[i] = 'x';
+                i++;
+                str_to_num[i] = '0';
+                i++;
+                size_to_decimal -= 2;
+            }
+        }
+    }
+
+    if (size_to_decimal > 0 && specs.minus == 0) {
+        while ((size_to_decimal - specs.flag_to_size > 0) && str_to_num) {
+            str_to_num[i] = ' ';
             i++;
-            str_to_num[i] = '0';
-            i++;
-            size_to_decimal -= 2;
+            size_to_decimal--;
         }
     }
 
     return i;
 }
 
-char *print_hex(char *res, Spec specs, char format, va_list *input){
+char *print_hex(char *res, Spec specs, va_list *input){
 
     unsigned long int num = 0;
     if (specs.length == 'l') {
@@ -399,19 +438,34 @@ char *print_hex(char *res, Spec specs, char format, va_list *input){
 
     int i = u_o_x_X_to_string(buffer, specs, num, size_to_num);
 
-    free(buffer);
+    if (buffer) {
+        for (int j = i - 1; j >= 0; j--){
+            *res = buffer[j];
+            res++;
+        }
+        // если кто то вдруг решил сделать ширину без '-', то заполняем дальше пробелы, зочем????????
+        // теперь пон зочем ^_^
+        while ((i < specs.width)){
+            *res = ' ';
+            res++;
+            i++;
+        }
+    }
+    
+    if (buffer) free(buffer);
 
-    return ;
+    return res;
 }
 
-char *parser(char *res, char *res_begining, const char *format, Spec specs, va_list *input){
+char *parser(char *res, const char *format, Spec specs, va_list *input){
 
     if (*format == 'd' || *format == 'i'){
         res = print_decimal(res, specs, input);
     } else if (*format == 'u' || *format == 'o' || *format == 'x' || *format == 'X') {
         specs = set_number_system(specs, *format);
-        res = print_hex(res, specs, *(format - 1), input);
+        res = print_hex(res, specs, input);
     }
+    *(res++) = '\0';
     return res;
 }
 
@@ -419,8 +473,9 @@ int s21_sprintf(char *res, const char *format, ...){
 
     char specifiers[] = "diuoxXcsnpfFeEgG%";
 
-    char *start = res;
 
+
+    char *start = res;
     va_list input = {0};
     va_start(input, format);
     
@@ -431,14 +486,13 @@ int s21_sprintf(char *res, const char *format, ...){
             specs.number_system = 10;
             format = set_specs(&specs, format, &input);
             while (!strchr(specifiers, *format)) format++;
-            res = parser(res, start, format, specs, &input);
+            res = parser(res, format, specs, &input);
         } else {
             *res = *format;
             res++;
         }
         format++;
     }
-
 
     va_end(input);
 
@@ -450,17 +504,31 @@ int main() {
 //    "%+-014.6hd adsdsa: %ld dsaads: %s %x";
 
 //   не прошло тесты:  int res_diff_count = s21_sprintf(res, "%+-3.6hd", 123213); sprintf(res2, "%+-3.6hd", 123213);
-
+// "% 5.51u" sprintf не компилит
+//     char *format = "%-16o";
+//     int val = 14140; не проходит
 // "%+-014.6hd"
 
-    char res[256] = "";
-    char res2[256] = "";
+    // char res[256] = "";
+    // char res2[256] = "";
 
-    int res_diff_count = s21_sprintf(res2, "%o", 0211);
-    sprintf(res2, "%o", 0211);
+    // int res_diff_count = s21_sprintf(res, "%#-10x", 858158158);
+    // sprintf(res2, "%5x", 858158158);
 
-    printf("%s|\n", res2);
-    printf("%s|\n", res);
     // printf("%d\n", res_diff_count);
+
+    // printf("%s|\n", res2);
+    // printf("%s|\n", res);
+
+    char str1[1000];
+    char str2[1000];
+
+    char *format = "%#x";
+    unsigned val = 0;
+    s21_sprintf(str1, format, val),
+    sprintf(str2, format, val);
     
+    printf("%s|\n", str1);
+    printf("%s|\n", str2);
+    // printf("%d\n", res_diff_count);
 }
