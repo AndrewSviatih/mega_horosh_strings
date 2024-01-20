@@ -315,8 +315,16 @@ size_t get_buff_size_hex(Spec *specs, unsigned long int num){
     }
 
     if ((size_t)specs->width > res) res = specs->width;
-    if ((size_t)specs->accurency > res) res = specs->accurency;
+    if ((size_t)specs->accurency >= res) {
+        res = specs->accurency;
+        if (specs->hash && specs->number_system == 16 && num) {
+            res += 2;
+        } else if (specs->hash && specs->number_system == 8 && num){
+            res++;
+        }
+    }
 
+    
     if (res == 0 && copy_num == 0 && !specs->accurency && !specs->width && !specs->space && !specs->dot)
         res++;
 
@@ -330,9 +338,9 @@ int u_o_x_X_to_string(char *str_to_num, Spec specs, unsigned long int num, size_
     int i = 0;
     unsigned long int copy_num = num;
 
-    if (specs.hash && specs.number_system == 8) {
+    if (specs.hash && specs.number_system == 8 && copy_num) {
         specs.flag_to_size = 1;
-    } else if (specs.hash && specs.number_system == 16) {
+    } else if (specs.hash && specs.number_system == 16 && copy_num) {
         specs.flag_to_size = 2;
     }
 // в функцию
@@ -362,17 +370,28 @@ int u_o_x_X_to_string(char *str_to_num, Spec specs, unsigned long int num, size_
     if (size_to_decimal == 1 && specs.zero == 1 && specs.flag_to_size == 1)
         specs.zero = 0;
 // в функцию
+//     char *format = "%#-5.10x";
     while (specs.zero && str_to_num && (size_to_decimal - specs.flag_to_size > 0) && (specs.accurency || flag)) {
         if ((size_to_decimal == 1 && specs.flag_to_size == 1))
             break;
-
+        
         str_to_num[i] = '0';
         size_to_decimal--;
         specs.accurency--;
         i++;
     }
 
-    if (copy_num && num) {
+    while (!specs.minus && (size_to_decimal - specs.flag_to_size > 0) && (specs.accurency || flag)) {
+        if ((size_to_decimal == 1 && specs.flag_to_size == 1))
+            break;
+
+        str_to_num[i] = ' ';
+        size_to_decimal--;
+        specs.accurency--;
+        i++;
+    }
+
+    if (num) {
         if (specs.hash && specs.number_system == 8) {
             str_to_num[i] = '0';
             i++;
@@ -393,7 +412,6 @@ int u_o_x_X_to_string(char *str_to_num, Spec specs, unsigned long int num, size_
             }
         }
     }
-
 
     return i;
 }
@@ -491,27 +509,20 @@ int s21_sprintf(char *res, const char *format, ...){
 
 // // "%+-014.6hd"
 
-//     // char res[256] = "";
-//     // char res2[256] = "";
-
 //     // int res_diff_count = s21_sprintf(res, "%#-10x", 858158158);
 //     // sprintf(res2, "%5x", 858158158);
-
-//     // printf("%d\n", res_diff_count);
-
-//     // printf("%s|\n", res2);
-//     // printf("%s|\n", res);
 
 //     char str1[10000];
 //     char str2[10000];
 
-//     int val = 69;
+//     char *format = "%#x";
+//     unsigned val = 0;
 
-//     int res_int_1 = s21_sprintf(str1, "%0i %d %4.*i %013d %d", 5, -10431, 5311, 0, -5818181);
-//     int res_int_2 = sprintf(str2, "%0i %d %4.*i %013d %d", 5, -10431, 5311, 0, -5818181);      
+//     int res_int_1 = s21_sprintf(str1, format, val);
+//     int res_int_2 = sprintf(str2, format, val);      
 
-//     printf("%s|\n", str1);
 //     printf("%s|\n", str2);
-
+//     printf("%s|\n", str1);
+    
 //     printf("%d %d\n", res_int_2, res_int_1);
 // }
