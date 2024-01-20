@@ -335,7 +335,13 @@ int u_o_x_X_to_string(char *str_to_num, Spec specs, unsigned long int num, size_
         str_to_num[i] = sym;
         i++;
         size_to_decimal--;
-        copy_num /= specs.number_system;
+        if (specs.number_system == 8) {
+            copy_num /= 8;
+        } else if (specs.number_system == 16) {
+            copy_num /= 16;
+        } else {
+            copy_num /= 10;
+        }
     }
 
     if (flag) num = -num;
@@ -383,7 +389,7 @@ int u_o_x_X_to_string(char *str_to_num, Spec specs, unsigned long int num, size_
     return i;
 }
 
-char *print_hex(char *res, Spec specs, va_list *input){
+char *print_hex(char *res, Spec specs, char format, va_list *input){
 
     unsigned long int num = 0;
     if (specs.length == 'l') {
@@ -412,19 +418,19 @@ char *print_hex(char *res, Spec specs, va_list *input){
             i++;
         }
     }
-
+    
     if (buffer) free(buffer);
 
     return res;
 }
 
-char *parser(char *res, const char *format, Spec specs, va_list *input){
+char *parser(char *res, char *res_begining, const char *format, Spec specs, va_list *input){
 
     if (*format == 'd' || *format == 'i'){
         res = print_decimal(res, specs, input);
     } else if (*format == 'u' || *format == 'o' || *format == 'x' || *format == 'X') {
         specs = set_number_system(specs, *format);
-        res = print_hex(res, specs, input);
+        res = print_hex(res, specs, *(format - 1), input);
     }
     return res;
 }
@@ -432,11 +438,10 @@ char *parser(char *res, const char *format, Spec specs, va_list *input){
 int s21_sprintf(char *res, const char *format, ...){
 
     char specifiers[] = "diuoxXcsnpfFeEgG%";
-    char *start = res;
-    for (size_t i = 0; i < sizeof(res); i++) {
-        res[i] = '\0';
-    }
 
+
+
+    char *start = res;
     va_list input = {0};
     va_start(input, format);
     
@@ -447,7 +452,7 @@ int s21_sprintf(char *res, const char *format, ...){
             specs.number_system = 10;
             format = set_specs(&specs, format, &input);
             while (!strchr(specifiers, *format)) format++;
-            res = parser(res, format, specs, &input);
+            res = parser(res, start, format, specs, &input);
         } else {
             *res = *format;
             res++;
@@ -469,15 +474,26 @@ int main() {
 
 // "%+-014.6hd"
 
-    char res[256];
-    char res2[256];
+    // char res[256] = "";
+    // char res2[256] = "";
 
-    int res_int_2 = sprintf(res2, "%o", 21);
-    int res_int_1 = s21_sprintf(res, "%o", 21);
-    
-    printf("%s|\n", res2);
-    printf("%s|\n", res);
+    // int res_diff_count = s21_sprintf(res, "%#-10x", 858158158);
+    // sprintf(res2, "%5x", 858158158);
 
-    printf("%d %d\n", res_int_2, res_int_1);
+    // printf("%d\n", res_diff_count);
+
+    // printf("%s|\n", res2);
+    // printf("%s|\n", res);
+
+    char str1[1000];
+    char str2[1000];
+
+    char *format = "%#x";
+    unsigned val = 0;
+    s21_sprintf(str1, format, val),
+    sprintf(str2, format, val);
     
+    printf("%s|\n", str1);
+    printf("%s|\n", str2);
+    // printf("%d\n", res_diff_count);
 }
