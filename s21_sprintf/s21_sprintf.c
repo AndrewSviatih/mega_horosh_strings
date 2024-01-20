@@ -335,13 +335,7 @@ int u_o_x_X_to_string(char *str_to_num, Spec specs, unsigned long int num, size_
         str_to_num[i] = sym;
         i++;
         size_to_decimal--;
-        if (specs.number_system == 8) {
-            copy_num /= 8;
-        } else if (specs.number_system == 16) {
-            copy_num /= 16;
-        } else {
-            copy_num /= 10;
-        }
+        copy_num /= 10;
     }
 
     if (flag) num = -num;
@@ -405,23 +399,9 @@ char *print_hex(char *res, Spec specs, char format, va_list *input){
 
     int i = u_o_x_X_to_string(buffer, specs, num, size_to_num);
 
-    if (buffer) {
-        for (int j = i - 1; j >= 0; j--){
-            *res = buffer[j];
-            res++;
-        }
-        // если кто то вдруг решил сделать ширину без '-', то заполняем дальше пробелы, зочем????????
-        // теперь пон зочем ^_^
-        while ((i < specs.width)){
-            *res = ' ';
-            res++;
-            i++;
-        }
-    }
-    
-    if (buffer) free(buffer);
+    free(buffer);
 
-    return res;
+    return ;
 }
 
 char *parser(char *res, char *res_begining, const char *format, Spec specs, va_list *input){
@@ -439,9 +419,8 @@ int s21_sprintf(char *res, const char *format, ...){
 
     char specifiers[] = "diuoxXcsnpfFeEgG%";
 
-
-
     char *start = res;
+
     va_list input = {0};
     va_start(input, format);
     
@@ -474,26 +453,14 @@ int main() {
 
 // "%+-014.6hd"
 
-    // char res[256] = "";
-    // char res2[256] = "";
+    char res[256] = "";
+    char res2[256] = "";
 
-    // int res_diff_count = s21_sprintf(res, "%#-10x", 858158158);
-    // sprintf(res2, "%5x", 858158158);
+    int res_diff_count = s21_sprintf(res2, "%o", 0211);
+    sprintf(res2, "%o", 0211);
 
+    printf("%s|\n", res2);
+    printf("%s|\n", res);
     // printf("%d\n", res_diff_count);
-
-    // printf("%s|\n", res2);
-    // printf("%s|\n", res);
-
-    char str1[1000];
-    char str2[1000];
-
-    char *format = "%#x";
-    unsigned val = 0;
-    s21_sprintf(str1, format, val),
-    sprintf(str2, format, val);
     
-    printf("%s|\n", str1);
-    printf("%s|\n", str2);
-    // printf("%d\n", res_diff_count);
 }
