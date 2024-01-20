@@ -16,6 +16,7 @@ typedef struct {
     int upper_case;
     int g;
     int e;
+    int negetive;
 } Spec;
 
 const char *get_specs(const char *format, Spec *specs) {
@@ -95,7 +96,7 @@ const char *set_specs(Spec *specs, const char *format, va_list *input) {
 
 size_t get_size_of_decimal(Spec *specs, long int num){
 
-    size_t res = 0;
+    size_t ress = 0;
 
     long int copy_num = num;
 
@@ -103,24 +104,26 @@ size_t get_size_of_decimal(Spec *specs, long int num){
 
     while (copy_num > 0) {
         copy_num /= 10;
-        res++;
+        ress++;
     }
 
-    if (copy_num == 0 && res == 0 && (specs->accurency || specs->width || specs->space)) {
-        res++;
+    if (copy_num == 0 && ress == 0 && (specs->accurency || specs->width || specs->space)) {
+        ress++;
     }
 
-    if ((size_t)specs->width > res) res = specs->width;
-    if ((size_t)specs->accurency > res) res = specs->accurency;
+    if ((size_t)specs->width > ress) ress = specs->width;
+    if ((size_t)specs->accurency > ress) ress = specs->accurency;
 
     if (specs->space || specs->plus || num < 0) {
         specs->flag_to_size = 1;
-        res++;
+        ress++;
     }
-    if (res == 0 && copy_num == 0 && !specs->accurency && !specs->width && !specs->space && !specs->dot) 
-        res++;
+    if (ress == 0 && copy_num == 0 && !specs->accurency && !specs->width && !specs->space && !specs->dot) 
+        ress++;
 
-    return res;
+    printf("%zu\n", ress);
+
+    return ress;
 }
 
 char get_num_char(int num, int upper_case){
@@ -160,6 +163,7 @@ int decimal_to_string(Spec specs, char *str_to_num, long int num, size_t size_to
 
     if (num < 0){
         num = -num;
+        flag = 1;
     }
 
     int i = 0;
@@ -168,11 +172,10 @@ int decimal_to_string(Spec specs, char *str_to_num, long int num, size_t size_to
     if ((copy_num == 0 && (specs.accurency || specs.width || specs.space)) ||
         (copy_num == 0 && (!specs.accurency && !specs.width && !specs.space && !specs.dot))){
 
-        char symb = copy_num % specs.number_system - '0';
+        char symb = '0';
         str_to_num[i] = symb;
         i++;
         size_to_decimal--;
-        copy_num /= 10;
     }
 
     while (copy_num && str_to_num && size_to_decimal){
@@ -285,24 +288,27 @@ size_t get_buff_size_hex(Spec *specs, unsigned long int num){
 
     unsigned long int copy_num = num;
 
-    if (specs->number_system == 8){
-        while (copy_num > 0) {
-            copy_num /= 8;
-            res++;
-        }
+    if (copy_num && num) {
+        if (specs->number_system == 8){
+            while (copy_num > 0) {
+                copy_num /= 8;
+                res++;
+            }
         if (specs->hash) res++;
-    } else if (specs->number_system == 16) {
-        while (copy_num > 0) {
-            copy_num /= 16;
-            res++;
-        }
-        if (specs->hash) res += 2;
-    } else {
-        while (copy_num > 0) {
-            copy_num /= 10;
-            res++;
+        } else if (specs->number_system == 16) {
+            while (copy_num > 0) {
+                copy_num /= 16;
+                res++;
+            }
+            if (specs->hash) res += 2;
+        } else {
+            while (copy_num > 0) {
+                copy_num /= 10;
+                res++;
+            }
         }
     }
+
 
     if (copy_num == 0 && res == 0 && (specs->accurency || specs->width || specs->space)) {
         res++;
@@ -314,7 +320,7 @@ size_t get_buff_size_hex(Spec *specs, unsigned long int num){
     if (res == 0 && copy_num == 0 && !specs->accurency && !specs->width && !specs->space && !specs->dot)
         res++;
 
-    // printf("%zu\n", res);
+    printf("%zu\n", res);
     return res;
 }
 
@@ -336,6 +342,12 @@ int u_o_x_X_to_string(char *str_to_num, Spec specs, unsigned long int num, size_
         i++;
         size_to_decimal--;
         copy_num /= specs.number_system;
+    }
+
+    if (!copy_num && !num) {
+        str_to_num[i] = '0';
+        i++;
+        size_to_decimal--;
     }
 
     if (flag) num = -num;
@@ -360,25 +372,28 @@ int u_o_x_X_to_string(char *str_to_num, Spec specs, unsigned long int num, size_
         i++;
     }
 
-    if (specs.hash && specs.number_system == 8) {
-        str_to_num[i] = '0';
-        i++;
-        size_to_decimal--;
-    } else if (specs.hash && specs.number_system == 16) {
-        if (specs.upper_case) {
-            str_to_num[i] = 'X';
-            i++;
+    if (copy_num && num) {
+        if (specs.hash && specs.number_system == 8) {
             str_to_num[i] = '0';
             i++;
-            size_to_decimal -= 2;
-        } else if (!specs.upper_case) {
-            str_to_num[i] = 'x';
-            i++;
-            str_to_num[i] = '0';
-            i++;
-            size_to_decimal -= 2;
+            size_to_decimal--;
+        } else if (specs.hash && specs.number_system == 16) {
+            if (specs.upper_case) {
+                str_to_num[i] = 'X';
+                i++;
+                str_to_num[i] = '0';
+                i++;
+                size_to_decimal -= 2;
+            } else if (!specs.upper_case) {
+                str_to_num[i] = 'x';
+                i++;
+                str_to_num[i] = '0';
+                i++;
+                size_to_decimal -= 2;
+            }
         }
     }
+
 
     return i;
 }
@@ -412,7 +427,7 @@ char *print_hex(char *res, Spec specs, va_list *input){
             i++;
         }
     }
-
+    
     if (buffer) free(buffer);
 
     return res;
@@ -432,10 +447,16 @@ char *parser(char *res, const char *format, Spec specs, va_list *input){
 int s21_sprintf(char *res, const char *format, ...){
 
     char specifiers[] = "diuoxXcsnpfFeEgG%";
+
     char *start = res;
-    for (size_t i = 0; i < sizeof(res); i++) {
-        res[i] = '\0';
-    }
+    // int res_lenght = sizeof(&res);
+    // printf("%d\n", res_lenght);
+
+    // for (long unsigned int i = 0; i < res_lenght; i++) {
+    //     res[i] = '\0';
+    // }
+
+
 
     va_list input = {0};
     va_start(input, format);
@@ -448,36 +469,49 @@ int s21_sprintf(char *res, const char *format, ...){
             format = set_specs(&specs, format, &input);
             while (!strchr(specifiers, *format)) format++;
             res = parser(res, format, specs, &input);
+            *res = '\0';
         } else {
             *res = *format;
             res++;
+            *res = '\0';
         }
         format++;
     }
-
 
     va_end(input);
 
     return res - start;
 }
 
-int main() {
+// int main() {
 
-//    "%+-014.6hd adsdsa: %ld dsaads: %s %x";
+// //    "%+-014.6hd adsdsa: %ld dsaads: %s %x";
 
-//   не прошло тесты:  int res_diff_count = s21_sprintf(res, "%+-3.6hd", 123213); sprintf(res2, "%+-3.6hd", 123213);
+// //   не прошло тесты:  int res_diff_count = s21_sprintf(res, "%+-3.6hd", 123213); sprintf(res2, "%+-3.6hd", 123213);
 
-// "%+-014.6hd"
+// // "%+-014.6hd"
 
-    char res[256];
-    char res2[256];
+//     // char res[256] = "";
+//     // char res2[256] = "";
 
-    int res_int_2 = sprintf(res2, "%o", 21);
-    int res_int_1 = s21_sprintf(res, "%o", 21);
-    
-    printf("%s|\n", res2);
-    printf("%s|\n", res);
+//     // int res_diff_count = s21_sprintf(res, "%#-10x", 858158158);
+//     // sprintf(res2, "%5x", 858158158);
 
-    printf("%d %d\n", res_int_2, res_int_1);
-    
-}
+//     // printf("%d\n", res_diff_count);
+
+//     // printf("%s|\n", res2);
+//     // printf("%s|\n", res);
+
+//     char str1[10000];
+//     char str2[10000];
+
+//     int val = 69;
+
+//     int res_int_1 = s21_sprintf(str1, "%0i %d %4.*i %013d %d", 5, -10431, 5311, 0, -5818181);
+//     int res_int_2 = sprintf(str2, "%0i %d %4.*i %013d %d", 5, -10431, 5311, 0, -5818181);      
+
+//     printf("%s|\n", str1);
+//     printf("%s|\n", str2);
+
+//     printf("%d %d\n", res_int_2, res_int_1);
+// }
