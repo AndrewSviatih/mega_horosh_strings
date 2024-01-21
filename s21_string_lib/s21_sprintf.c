@@ -381,7 +381,8 @@ int u_o_x_X_to_string(char *str_to_num, Spec specs, unsigned long int num, size_
         i++;
     }
 
-    while (!specs.minus && (size_to_decimal - specs.flag_to_size > 0) && (specs.accurency || flag)) {
+
+    while (specs.minus && (size_to_decimal - specs.flag_to_size > 0) && (specs.accurency || flag)) {
         if ((size_to_decimal == 1 && specs.flag_to_size == 1))
             break;
 
@@ -515,8 +516,8 @@ int s21_sprintf(char *res, const char *format, ...){
 //     char str1[10000];
 //     char str2[10000];
 
-//     char *format = "%#x";
-//     unsigned val = 0;
+//     char *format = "%#30x";
+//     unsigned val = 1;
 
 //     int res_int_1 = s21_sprintf(str1, format, val);
 //     int res_int_2 = sprintf(str2, format, val);      
