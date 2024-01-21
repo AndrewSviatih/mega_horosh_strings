@@ -540,9 +540,9 @@ int s21_sprintf(char *res, const char *format, ...){
 //     char str2[10000];
 
 //     int res_int_1 = s21_sprintf(
-//         str1, "%7.4x", 419);
+//         str1, "%hx", -11);
 //     int res_int_2 = sprintf(
-//         str2, "%7.4x", 419); 
+//         str2, "%hx", -11); 
 
 //     printf("%s|\n", str2);
 //     printf("%s|\n", str1);
