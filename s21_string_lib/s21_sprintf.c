@@ -17,6 +17,8 @@ typedef struct {
     int g;
     int e;
     int negetive;
+    int spec_u;
+    int spec_x;
 } Spec;
 
 const char *get_specs(const char *format, Spec *specs) {
@@ -335,6 +337,7 @@ size_t get_buff_size_hex(Spec *specs, unsigned long int num){
 int u_o_x_X_to_string(char *str_to_num, Spec specs, unsigned long int num, size_t size_to_decimal) {
 
     int flag = 0;
+    // int flag_u_spec = 0;
     int i = 0;
     unsigned long int copy_num = num;
 
@@ -353,6 +356,14 @@ int u_o_x_X_to_string(char *str_to_num, Spec specs, unsigned long int num, size_
     }
 
     if (!copy_num && !num) {
+        if (specs.spec_x && specs.accurency) {
+            while ((specs.accurency > 1)) {
+                str_to_num[i] = '0';
+                size_to_decimal--;
+                specs.accurency--;
+                i++;
+            }
+        }
         str_to_num[i] = '0';
         i++;
         size_to_decimal--;
@@ -381,11 +392,9 @@ int u_o_x_X_to_string(char *str_to_num, Spec specs, unsigned long int num, size_
         i++;
     }
 
-
-    while (specs.minus && (size_to_decimal - specs.flag_to_size > 0) && (specs.accurency || flag)) {
-        if ((size_to_decimal == 1 && specs.flag_to_size == 1))
-            break;
-
+    while (!specs.minus && (size_to_decimal - specs.flag_to_size > 0) && ((specs.accurency || flag) || specs.accurency < specs.width)) {
+        if ((size_to_decimal == 1 && specs.flag_to_size == 1)) break;
+        if (specs.hash && specs.width && specs.spec_x) break;
         str_to_num[i] = ' ';
         size_to_decimal--;
         specs.accurency--;
@@ -412,6 +421,15 @@ int u_o_x_X_to_string(char *str_to_num, Spec specs, unsigned long int num, size_
                 size_to_decimal -= 2;
             }
         }
+    }
+
+    while (!specs.minus && specs.hash && specs.width && specs.spec_x && (size_to_decimal > 0) && (specs.accurency || flag)) {
+        if ((size_to_decimal == 1 && specs.flag_to_size == 1))
+            break;
+        str_to_num[i] = ' ';
+        size_to_decimal--;
+        specs.accurency--;
+        i++;
     }
 
     return i;
@@ -487,6 +505,11 @@ int s21_sprintf(char *res, const char *format, ...){
             specs.number_system = 10;
             format = set_specs(&specs, format, &input);
             while (!strchr(specifiers, *format)) format++;
+            if (*format == 'u') {
+                specs.spec_u = 1;
+            } else if (*format == 'x'){
+                specs.spec_x = 1;
+            }
             res = parser(res, format, specs, &input);
             *res = '\0';
         } else {
@@ -516,11 +539,10 @@ int s21_sprintf(char *res, const char *format, ...){
 //     char str1[10000];
 //     char str2[10000];
 
-//     char *format = "%#30x";
-//     unsigned val = 1;
-
-//     int res_int_1 = s21_sprintf(str1, format, val);
-//     int res_int_2 = sprintf(str2, format, val);      
+//     int res_int_1 = s21_sprintf(
+//         str1, "%7.4x", 419);
+//     int res_int_2 = sprintf(
+//         str2, "%7.4x", 419); 
 
 //     printf("%s|\n", str2);
 //     printf("%s|\n", str1);
