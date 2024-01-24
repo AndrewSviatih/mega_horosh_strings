@@ -17,8 +17,6 @@ typedef struct {
     int g;
     int e;
     int negetive;
-    int spec_u;
-    int spec_x;
 } Spec;
 
 const char *get_specs(const char *format, Spec *specs) {
@@ -123,7 +121,7 @@ size_t get_size_of_decimal(Spec *specs, long int num){
     if (ress == 0 && copy_num == 0 && !specs->accurency && !specs->width && !specs->space && !specs->dot) 
         ress++;
 
-    printf("%zu\n", ress);
+    // printf("%zu\n", ress);
 
     return ress;
 }
@@ -330,37 +328,37 @@ size_t get_buff_size_hex(Spec *specs, unsigned long int num){
     if (res == 0 && copy_num == 0 && !specs->accurency && !specs->width && !specs->space && !specs->dot)
         res++;
 
-    printf("%zu\n", res);
+    // printf("%zu\n", res);
     return res;
 }
 
-int u_o_x_X_to_string(char *str_to_num, Spec specs, unsigned long int num, size_t size_to_decimal) {
+int u_o_x_X_to_string(char *str_to_num, Spec *specs, unsigned long int num, size_t size_to_decimal) {
 
     int flag = 0;
     // int flag_u_spec = 0;
     int i = 0;
     unsigned long int copy_num = num;
 
-    if (specs.hash && specs.number_system == 8 && copy_num) {
-        specs.flag_to_size = 1;
-    } else if (specs.hash && specs.number_system == 16 && copy_num) {
-        specs.flag_to_size = 2;
+    if (specs->hash && specs->number_system == 8 && copy_num) {
+        specs->flag_to_size = 1;
+    } else if (specs->hash && specs->number_system == 16 && copy_num) {
+        specs->flag_to_size = 2;
     }
 // в функцию
     while (copy_num && str_to_num && size_to_decimal) {
-        char sym = get_num_char(copy_num % specs.number_system, specs.upper_case);
+        char sym = get_num_char(copy_num % specs->number_system, specs->upper_case);
         str_to_num[i] = sym;
         i++;
         size_to_decimal--;
-        copy_num /= specs.number_system;
+        copy_num /= specs->number_system;
     }
 
     if (!copy_num && !num) {
-        if (specs.spec_x && specs.accurency) {
-            while ((specs.accurency > 1)) {
+        if (specs->number_system == 16 && specs->accurency) {
+            while ((specs->accurency > 1)) {
                 str_to_num[i] = '0';
                 size_to_decimal--;
-                specs.accurency--;
+                specs->accurency--;
                 i++;
             }
         }
@@ -371,49 +369,49 @@ int u_o_x_X_to_string(char *str_to_num, Spec specs, unsigned long int num, size_
 
     if (flag) num = -num;
 // в функцию
-    if (specs.accurency - i > 0) {
-        specs.accurency -= i;
-        specs.zero = 1;
+    if (specs->accurency - i > 0) {
+        specs->accurency -= i;
+        specs->zero = 1;
     } else {
         flag = 1;
     }
 
-    if (size_to_decimal == 1 && specs.zero == 1 && specs.flag_to_size == 1)
-        specs.zero = 0;
+    if (size_to_decimal == 1 && specs->zero == 1 && specs->flag_to_size == 1)
+        specs->zero = 0;
 // в функцию
-//     char *format = "%#-5.10x";
-    while (specs.zero && str_to_num && (size_to_decimal - specs.flag_to_size > 0) && (specs.accurency || flag)) {
-        if ((size_to_decimal == 1 && specs.flag_to_size == 1))
+//     char *format = "%#-5->10x";
+    while (specs->zero && str_to_num && (size_to_decimal - specs->flag_to_size > 0) && (specs->accurency || flag)) {
+        if ((size_to_decimal == 1 && specs->flag_to_size == 1))
             break;
         
         str_to_num[i] = '0';
         size_to_decimal--;
-        specs.accurency--;
+        specs->accurency--;
         i++;
     }
 
-    while (!specs.minus && (size_to_decimal - specs.flag_to_size > 0) && ((specs.accurency || flag) || specs.accurency < specs.width)) {
-        if ((size_to_decimal == 1 && specs.flag_to_size == 1)) break;
-        if (specs.hash && specs.width && specs.spec_x) break;
+    while (!specs->minus && (size_to_decimal - specs->flag_to_size > 0) && ((specs->accurency || flag) || specs->accurency < specs->width)) {
+        if ((size_to_decimal == 1 && specs->flag_to_size == 1)) break;
+        if (specs->hash && specs->width && specs->number_system == 16) break;
         str_to_num[i] = ' ';
         size_to_decimal--;
-        specs.accurency--;
+        specs->accurency--;
         i++;
     }
 
     if (num) {
-        if (specs.hash && specs.number_system == 8) {
+        if (specs->hash && specs->number_system == 8) {
             str_to_num[i] = '0';
             i++;
             size_to_decimal--;
-        } else if (specs.hash && specs.number_system == 16) {
-            if (specs.upper_case) {
+        } else if (specs->hash && specs->number_system == 16) {
+            if (specs->upper_case) {
                 str_to_num[i] = 'X';
                 i++;
                 str_to_num[i] = '0';
                 i++;
                 size_to_decimal -= 2;
-            } else if (!specs.upper_case) {
+            } else if (!specs->upper_case) {
                 str_to_num[i] = 'x';
                 i++;
                 str_to_num[i] = '0';
@@ -423,12 +421,12 @@ int u_o_x_X_to_string(char *str_to_num, Spec specs, unsigned long int num, size_
         }
     }
 
-    while (!specs.minus && specs.hash && specs.width && specs.spec_x && (size_to_decimal > 0) && (specs.accurency || flag)) {
-        if ((size_to_decimal == 1 && specs.flag_to_size == 1))
+    while (!specs->minus && specs->hash && specs->width && specs->number_system == 16 && (size_to_decimal > 0) && (specs->accurency || flag)) {
+        if ((size_to_decimal == 1 && specs->flag_to_size == 1))
             break;
         str_to_num[i] = ' ';
         size_to_decimal--;
-        specs.accurency--;
+        specs->accurency--;
         i++;
     }
 
@@ -449,7 +447,7 @@ char *print_hex(char *res, Spec specs, va_list *input){
     size_t size_to_num = get_buff_size_hex(&specs, num);
     char *buffer = malloc(sizeof(char) * size_to_num);
 
-    int i = u_o_x_X_to_string(buffer, specs, num, size_to_num);
+    int i = u_o_x_X_to_string(buffer, &specs, num, size_to_num);
 
     if (buffer) {
         for (int j = i - 1; j >= 0; j--){
@@ -470,13 +468,181 @@ char *print_hex(char *res, Spec specs, va_list *input){
     return res;
 }
 
-char *parser(char *res, const char *format, Spec specs, va_list *input){
+char *print_c(char *res, Spec specs, char symb) {
+
+    char *ptr = NULL;
+    int i = 0;
+
+
+    while (!specs.minus && specs.width - 1 > 0) {
+        *res = ' ';
+        res++;
+        i++;
+        specs.width--;
+    }
+
+    if (symb < 127) {
+        *res = symb;
+        res++;
+        i++;
+        if (specs.minus) {
+            while (specs.width - 1 > 0) {
+                *res = ' ';
+                res++;
+                i++;
+                specs.width--;
+            }
+        }
+    }
+    ptr = res;
+
+    return ptr;
+}
+
+char *print_s(char *res, Spec specs, va_list *input){
+
+    char *res_ptr = res;
+    char *string_input = va_arg(*input, char*);
+
+    if (string_input) {
+        int tmp_width = specs.width;
+        int i = 0;
+
+        if ((size_t)specs.width < strlen(string_input)) {
+            specs.width = strlen(string_input);
+        }
+
+        int needed_spaces = specs.width - strlen(string_input);
+
+        if (specs.accurency == 0) specs.accurency = specs.width;
+
+        if (specs.accurency != 0 && specs.accurency < tmp_width)
+            needed_spaces = tmp_width - specs.accurency;
+        
+
+        if (!specs.minus) {
+            while (needed_spaces) {
+                *res = ' ';
+                res++;
+                needed_spaces--;
+            }
+        }
+
+        while (*string_input != '\0') {
+            if (!specs.accurency) break;
+            *res = *string_input;
+            res++;
+            string_input++;
+            i++;
+            specs.accurency--;
+        }
+
+        if (specs.minus) {
+            while (needed_spaces) {
+                *res = ' ';
+                res++;
+                needed_spaces--;
+            }
+        }
+    } else {
+        res = memcpy(res, "(null)", 6);
+        res += 6;
+    }
+
+    if (res_ptr) res_ptr = res;
+    return res_ptr;
+}
+
+char *print_p(char *res, Spec *specs, va_list *input) {
+    unsigned long int ptr_name = (unsigned long int)va_arg(*input, unsigned long int);
+
+    if (ptr_name == 0) {
+        res = memcpy(res, "(nil)", 5);
+        res += 5;
+    } else {
+        specs->number_system = 16;
+        specs->hash = 1;
+        specs->upper_case = 0;
+
+        size_t size_to_num = get_buff_size_hex(specs, ptr_name);
+        char *buffer = malloc(sizeof(char) * size_to_num);
+
+        int i = u_o_x_X_to_string(buffer, specs, ptr_name, size_to_num);
+
+        if (buffer) {
+            for (int j = i - 1; j >= 0; j--){
+                *res = buffer[j];
+                res++;
+            }
+            // если кто то вдруг решил сделать ширину без '-', то заполняем дальше пробелы, зочем????????
+            // теперь пон зочем ^_^
+            while ((i < specs->width)){
+                *res = ' ';
+                res++;
+                i++;
+            }
+        }
+        
+        if (buffer) free(buffer);
+    }
+
+    return res;
+
+}
+
+Spec set_specs_float(Spec specs, char *format) {
+
+    if (*format == 'g' || *format == 'G') {
+        specs.g = 1;
+    } else if (*format == 'e' || *format == 'E') {
+        specs.e = 1;
+    }
+    if (*format == 'G' || *format == 'E' || *format == 'F') specs.upper_case = 1;
+    return specs;
+}
+
+size_t get_size_to_double(Spec *specs, long double num) {
+
+    
+
+}
+
+char *print_float(char *res, Spec specs, char format, va_list *input) {
+
+    long double num = 0;
+    int e = 0;
+    if (format == 'L') {
+        num = va_arg(*input, long double);
+    } else {
+        num = va_arg(*input, double);
+    }
+
+    size_t size_to_double = get_size_to_double(&specs, num);
+
+}
+
+char *parser(char *res, const char *format, Spec specs, va_list *input, char *first_char){
 
     if (*format == 'd' || *format == 'i'){
         res = print_decimal(res, specs, input);
     } else if (*format == 'u' || *format == 'o' || *format == 'x' || *format == 'X') {
         specs = set_number_system(specs, *format);
         res = print_hex(res, specs, input);
+    } else if (*format == 'c') {
+        int symb = va_arg(*input, int);
+        res = print_c(res, specs, symb);
+    } else if (*format == 's') {
+        res = print_s(res, specs, input);
+    } else if (*format == 'p') {
+        res = print_p(res, &specs, input);
+    } else if (*format == 'n') {
+        int *n = va_arg(*input, int *);
+        *n = (int)(res - first_char);
+    } else if (*format == '%') {
+        res = print_c(res, specs, '%');
+    } else if (*format == 'f' || *format == 'F') {
+        specs = set_specs_float(specs, *format);
+
     }
     return res;
 }
@@ -484,16 +650,7 @@ char *parser(char *res, const char *format, Spec specs, va_list *input){
 int s21_sprintf(char *res, const char *format, ...){
 
     char specifiers[] = "diuoxXcsnpfFeEgG%";
-
-    char *start = res;
-    // int res_lenght = sizeof(&res);
-    // printf("%d\n", res_lenght);
-
-    // for (long unsigned int i = 0; i < res_lenght; i++) {
-    //     res[i] = '\0';
-    // }
-
-
+    char *first_char = res;
 
     va_list input = {0};
     va_start(input, format);
@@ -505,12 +662,7 @@ int s21_sprintf(char *res, const char *format, ...){
             specs.number_system = 10;
             format = set_specs(&specs, format, &input);
             while (!strchr(specifiers, *format)) format++;
-            if (*format == 'u') {
-                specs.spec_u = 1;
-            } else if (*format == 'x'){
-                specs.spec_x = 1;
-            }
-            res = parser(res, format, specs, &input);
+            res = parser(res, format, specs, &input, first_char);
             *res = '\0';
         } else {
             *res = *format;
@@ -522,7 +674,7 @@ int s21_sprintf(char *res, const char *format, ...){
 
     va_end(input);
 
-    return res - start;
+    return res - first_char;
 }
 
 // int main() {
@@ -539,10 +691,13 @@ int s21_sprintf(char *res, const char *format, ...){
 //     char str1[10000];
 //     char str2[10000];
 
+//     char *format = "%p";
+//     char *val = NULL;
+
 //     int res_int_1 = s21_sprintf(
-//         str1, "%hx", -11);
+//         str1, format, val);
 //     int res_int_2 = sprintf(
-//         str2, "%hx", -11); 
+//         str2, format, val);
 
 //     printf("%s|\n", str2);
 //     printf("%s|\n", str1);
