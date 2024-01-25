@@ -1,517 +1,1067 @@
-#include "../s21_string_lib/s21_string.h"
+#include "s21_string.h"
 #include "string.h"
 
-typedef struct {
-    int minus;
-    int plus;
-    int space;
-    int hash;
-    int zero;
-    int width;
-    int accurency;
-    char length;
-    int number_system;
-    int flag_to_size;
-    int dot;
-    int upper_case;
-    int g;
-    int e;
-    int negetive;
-} Spec;
-
-const char *get_specs(const char *format, Spec *specs) {
-    while (format) {
-        if (*format == '+')
-            specs->plus = 1;
-        else if (*format == '-')
-            specs->minus = 1;
-        else if (*format == '#')
-            specs->hash = 1;
-        else if (*format == ' ')
-            specs->space = 1;
-        else if (*format == '0')
-            specs->zero = 1;
-        else
-            break;
-        
+int s21_sprintf(char *str, const char *format, ...) {
+  va_list va;
+  va_start(va, format);
+  int error = 1;
+  int processed = 0;
+  struct PreparedFormatData prepared_format_data = {0};
+  str[0] = '\0';
+  while (*format) {
+    if (error) {
+      s21_memset(&prepared_format_data, 0, sizeof(prepared_format_data));
+      if (*format == '%') {
         format++;
+        format = sprintf_parser(format, &prepared_format_data, &error, va);
+        specifier_handler(&str, &prepared_format_data, va, processed);
+        processed += prepared_format_data.counter;
+      } else {
+        write_to_str(str, format);
+        processed++;
+        format++;
+      }
+    } else {
+      printf("error");
+      *str = '\0';
+      break;
     }
-    specs->space = (specs->space && !specs->plus);
-    specs->zero = (specs->zero && !specs->minus);
-
-    return format;
+  }
+  va_end(va);
+  return processed;
 }
 
-const char *get_width(const char *format, int *width, va_list *input){
+const char *sprintf_parser(const char *format,
+                           struct PreparedFormatData *prepared_format_data,
+                           int *error, va_list va) {
+  format = get_flags(format, prepared_format_data);
+  format = get_width(format, prepared_format_data, va);
+  format = get_precision(format, prepared_format_data, va);
+  format = get_length(format, prepared_format_data);
+  format = get_specifier(format, prepared_format_data, error);
 
-    *width = 0;
+  return format;
+}
 
+const char *get_flags(const char *format,
+                      struct PreparedFormatData *prepared_format_data) {
+  while (*format == '-' || *format == '+' || *format == ' ' || *format == '#' ||
+         *format == '0') {
+    switch (*format) {
+      case '-':
+        prepared_format_data->flags.minus++;
+        format++;
+        break;
+      case '+':
+        prepared_format_data->flags.plus++;
+        format++;
+        break;
+      case ' ':
+        prepared_format_data->flags.spase++;
+        format++;
+        break;
+      case '#':
+        prepared_format_data->flags.sharp++;
+        format++;
+        break;
+      case '0':
+        prepared_format_data->flags.zero++;
+        format++;
+        break;
+    }
+  }
+  return format;
+}
+
+const char *get_width(const char *format,
+                      struct PreparedFormatData *prepared_format_data,
+                      va_list va) {
+  if (*format == '*') {
+    prepared_format_data->width = va_arg(va, int);
+    format++;
+  } else {
+    char widthBuff[1024] = "";
+    int k = 0;
+    while (*format >= '0' && *format <= '9') {
+      widthBuff[k] = *format;
+      k++;
+      format++;
+    }
+    prepared_format_data->width = s21_atoi(widthBuff);
+  }
+  return format;
+}
+
+const char *get_precision(const char *format,
+                          struct PreparedFormatData *prepared_format_data,
+                          va_list va) {
+  if (*format == '.') {
+    prepared_format_data->has_precision = 1;
+    format++;
     if (*format == '*') {
-        *width = va_arg(*input, int);
+      prepared_format_data->precision = va_arg(va, int);
+      format++;
+    } else {
+      char precisionBuff[1024] = "";
+      int i = 0;
+      while (*format >= '0' && *format <= '9') {
+        precisionBuff[i] = *format;
+        i++;
         format++;
+      }
+      prepared_format_data->precision = s21_atoi(precisionBuff);
     }
-
-    while(*format){
-        if ('0' <= *format && *format <= '9'){
-            *width *= 10;
-            *width += *format - '0'; 
-        } else {
-            break;
-        }
-        format++;
-    }
-
-    return format;
-}
-// "%+-014.6hd" парсим этого монстра
-const char *set_specs(Spec *specs, const char *format, va_list *input) {
-
-    format = get_specs(format, specs);
-    format = get_width(format, &specs->width, input);
-// для точки
-    if (*format == '.') {
-        specs->dot = 1;
-        specs->zero = 0;
-        format += 1;
-        format = get_width(format, &specs->accurency, input);
-    }
-// для разных даблов
-    if (*format == 'L')
-        specs->length = 'L';
-    else if (*format == 'l')
-        specs->length = 'l';
-    else if (*format == 'h') 
-        specs->length = 'h';
-
-    if (specs->length != 0) format += 1;
-
-// ширина не может быть отрицательной
-    if (specs->width < 0) {
-        specs->width = -specs->width;
-        specs->minus = 1;
-    }
-    
-    return format;
+  }
+  return format;
 }
 
-size_t get_size_of_decimal(Spec *specs, long int num){
-
-    size_t ress = 0;
-
-    long int copy_num = num;
-
-    if (copy_num < 0) copy_num = -copy_num;
-
-    while (copy_num > 0) {
-        copy_num /= 10;
-        ress++;
-    }
-
-    if (copy_num == 0 && ress == 0 && (specs->accurency || specs->width || specs->space)) {
-        ress++;
-    }
-
-    if ((size_t)specs->width > ress) ress = specs->width;
-    if ((size_t)specs->accurency > ress) ress = specs->accurency;
-
-    if (specs->space || specs->plus || num < 0) {
-        specs->flag_to_size = 1;
-        ress++;
-    }
-    if (ress == 0 && copy_num == 0 && !specs->accurency && !specs->width && !specs->space && !specs->dot) 
-        ress++;
-
-    printf("%zu\n", ress);
-
-    return ress;
+const char *get_length(const char *format,
+                       struct PreparedFormatData *prepared_format_data) {
+  if (*format == 'h' || *format == 'l' || *format == 'L') {
+    prepared_format_data->length = *format++;
+  }
+  return format;
 }
 
-char get_num_char(int num, int upper_case){
-    char flag = '0';
-    switch (num)
-    {
-    case 10:
-        flag = (char)('a' - upper_case * 32);
-        break;
-    case 11:
-        flag = (char)('b' - upper_case * 32);
-        break;
-    case 12:
-        flag = (char)('c' - upper_case * 32);
-        break;
-    case 13:
-        flag = (char)('d' - upper_case * 32);
-        break;
-    case 14:
-        flag = (char)('e' - upper_case * 32);
-        break;
-    case 15:
-        flag = (char)('f' - upper_case * 32);
-        break;
+const char *get_specifier(const char *format,
+                          struct PreparedFormatData *prepared_format_data,
+                          int *error) {
+  char tmp = *format;
+  if (tmp != '\0') {
+    char *pattern = "cdieEfgGosuxXpn";
+    if (s21_strchr(pattern, tmp) != S21_NULL) {
+      prepared_format_data->specifier = *format++;
+    } else if (tmp == '%') {
+      prepared_format_data->specifier = *format++;
+    } else {
+      *error = 0;
+    }
+  }
+  return format;
+}
+
+int specifier_handler(char **str,
+                      struct PreparedFormatData *prepared_format_data,
+                      va_list va, int processed) {
+  switch (prepared_format_data->specifier) {
+    case 'c':
+    case '%':
+      char_handler(str, va, prepared_format_data);
+      break;
+    case 'd':
+    case 'i':
+      integer_handler(*str, prepared_format_data, va);
+      break;
+    case 's':
+      string_handler(*str, va, prepared_format_data);
+      break;
+    case 'f':
+    case 'e':
+    case 'E':
+    case 'g':
+    case 'G':
+      double_handler(*str, prepared_format_data, va);
+      break;
+    case 'u':
+    case 'x':
+    case 'X':
+    case 'o':
+      unsigned_handler(*str, prepared_format_data, va);
+      break;
+    case 'n':
+      n_handler(va, processed);
+      break;
+    case 'p':
+      pointer_handler(*str, prepared_format_data, va);
+      break;
+  }
+  return 0;
+}
+
+int double_handler(char *str, struct PreparedFormatData *prepared_format_data,
+                   va_list va) {
+  long double value = 0;
+
+  switch (prepared_format_data->length) {
+    case 'l':
+      value = (double)va_arg(va, double);
+      break;
+    case '\0':
+      value = va_arg(va, double);
+      break;
+    case 'L':
+      value = (long double)va_arg(va, long double);
+      break;
     default:
-        break;
-    }
+      break;
+  }
+  switch (prepared_format_data->specifier) {
+    case 'f':
+      write_float(str, prepared_format_data, value);
+      break;
+    case 'e':
+    case 'E':
+      write_e(str, prepared_format_data, value);
+      break;
+    case 'g':
+    case 'G':
+      write_g(str, prepared_format_data, value);
+      break;
+  }
 
-    if (num >= 0 && num <= 9) flag = (char)(num + 48);
-
-    return flag;
+  return 0;
 }
 
-int decimal_to_string(Spec specs, char *str_to_num, long int num, size_t size_to_decimal){
+int char_handler(char **str, va_list va,
+                 struct PreparedFormatData *prepared_format_data) {
+  char c;
+  if (prepared_format_data->specifier == '%') {
+    c = '%';
+  } else {
+    c = va_arg(va, int);
+  }
 
-    int flag = 0;
+  char *pointer = *str;
 
-    if (num < 0){
-        num = -num;
-        flag = 1;
+  while (*pointer != '\0') {  // conditional fixed
+    pointer++;
+  }
+
+  prepared_format_data->width--;
+
+  if (prepared_format_data->flags.minus != 0) {
+    *pointer = c;
+    pointer++;
+    prepared_format_data->counter++;
+    *pointer = '\0';
+    *str = pointer;
+    write_space(*str, prepared_format_data);
+    write_zero(*str, prepared_format_data);
+  } else {
+    write_space(*str, prepared_format_data);
+    write_zero(*str, prepared_format_data);
+
+    while (*pointer) {
+      pointer++;
     }
 
+    *pointer++ = c;
+    prepared_format_data->counter++;
+    *pointer = '\0';
+    *str = pointer;
+  }
+  return 0;
+}
+
+int string_handler(char *str, va_list va,
+                   struct PreparedFormatData *prepared_format_data) {
+  char *s = va_arg(va, char *);
+
+  if (prepared_format_data->has_precision == 0) {
+    prepared_format_data->precision = s21_strlen(s);
+  }
+
+  if (prepared_format_data->width > 0 &&
+      (prepared_format_data->width - prepared_format_data->precision) <= 0 &&
+      prepared_format_data->has_precision != 0) {
+    if (prepared_format_data->width > (int)s21_strlen(s)) {
+      prepared_format_data->width -= (int)s21_strlen(s);
+    } else {
+      prepared_format_data->width = 0;
+    }
+
+    prepared_format_data->counter = s21_strlen(s);
+  } else {
+    prepared_format_data->width -= prepared_format_data->precision;
+    prepared_format_data->counter += prepared_format_data->precision;
+  }
+
+  if (prepared_format_data->flags.minus != 0) {
+    s21_strncat(str, s, prepared_format_data->precision);
+    write_space(str, prepared_format_data);
+    write_zero(str, prepared_format_data);
+  } else {
+    write_space(str, prepared_format_data);
+    write_zero(str, prepared_format_data);
+    s21_strncat(str, s, prepared_format_data->precision);
+  }
+
+  return 0;
+}
+
+int pointer_handler(char *str, struct PreparedFormatData *prepared_format_data,
+                    va_list va) {
+  char value_str[1024] = {'\0'};
+  long long unsigned int value =
+      (long long unsigned int)va_arg(va, long long unsigned int);
+  decimal_to_hexoct(value_str, value, prepared_format_data, 16);
+  int value_len = s21_strlen(value_str) + 2;
+  prepared_format_data->precision -= value_len - 2;
+
+  if (prepared_format_data->precision <= 0) {
+    prepared_format_data->width -= value_len;
+  } else {
+    prepared_format_data->width -= value_len + prepared_format_data->precision;
+  }
+
+  prepared_format_data->counter += value_len;
+
+  if (prepared_format_data->flags.minus != 0) {
+    s21_strcat(str, "0x");
+    write_zeroes(str, prepared_format_data);
+    s21_strcat(str, value_str);
+    write_space(str, prepared_format_data);
+  } else {
+    write_space(str, prepared_format_data);
+    s21_strcat(str, "0x");
+    write_zeroes(str, prepared_format_data);
+    s21_strcat(str, value_str);
+  }
+  return 0;
+}
+
+int integer_handler(char *str, struct PreparedFormatData *prepared_format_data,
+                    va_list va) {
+  long long value = 0;
+
+  switch (prepared_format_data->length) {
+    case 'h':
+      value = (short int)va_arg(va, int);
+      break;
+    case '\0':
+      value = (int)va_arg(va, int);
+      break;
+    case 'l':
+      value = (long long)va_arg(va, long long int);
+      break;
+  }
+
+  write_int(str, prepared_format_data, value);
+  return 0;
+}
+
+int minus_handler(char *str, char *value_str,
+                  struct PreparedFormatData *prepared_format_data,
+                  long double value) {
+  if (prepared_format_data->flags.minus != 0) {
+    write_sign(str, value, prepared_format_data);
+    decrease_sign_width(value, prepared_format_data);
+    write_zeroes(str, prepared_format_data);
+    decrease_zeroes_width(prepared_format_data);
+    write_zero(str, prepared_format_data);
+    s21_strcat(str, value_str);
+    write_space(str, prepared_format_data);
+  } else {
+    decrease_sign_width(value, prepared_format_data);
+    decrease_zeroes_width(prepared_format_data);
+    write_space(str, prepared_format_data);
+    write_sign(str, value, prepared_format_data);
+    write_zeroes(str, prepared_format_data);
+    write_zero(str, prepared_format_data);
+    s21_strcat(str, value_str);
+  }
+  return 0;
+}
+
+int unsigned_handler(char *str, struct PreparedFormatData *prepared_format_data,
+                     va_list va) {
+  unsigned long long value = 0;
+
+  switch (prepared_format_data->length) {
+    case 'h':
+      value = (short unsigned)va_arg(va, unsigned int);
+      break;
+    case '\0':
+      value = (unsigned)va_arg(va, unsigned int);
+      break;
+    case 'l':
+      value = (unsigned long)va_arg(va, unsigned long int);
+      break;
+    default:
+      break;
+  }
+
+  switch (prepared_format_data->specifier) {
+    case 'u':
+      write_unsigned(str, prepared_format_data, value);
+      break;
+    case 'x':
+    case 'X':
+      x_handler(str, prepared_format_data, value);
+      break;
+    case 'o':
+      o_handler(str, prepared_format_data, value);
+      break;
+  }
+
+  return 0;
+}
+
+int o_handler(char *str, struct PreparedFormatData *prepared_format_data,
+              unsigned long long value) {
+  char value_str[1024] = {'\0'};
+  decimal_to_hexoct(value_str, value, prepared_format_data, 8);
+  int value_len = s21_strlen(value_str);
+  prepared_format_data->precision -= value_len;
+
+  if (prepared_format_data->precision <= 0) {
+    prepared_format_data->width -= value_len;
+  } else {
+    prepared_format_data->width -= value_len + prepared_format_data->precision;
+  }
+
+  prepared_format_data->counter += value_len;
+
+  if (prepared_format_data->flags.minus != 0) {
+    write_prefix_spaces(&str, prepared_format_data, value);
+    write_zeroes(str, prepared_format_data);
+    write_zero(str, prepared_format_data);
+    s21_strcat(str, value_str);
+    write_space(str, prepared_format_data);
+  } else {
+    write_prefix_spaces(&str, prepared_format_data, value);
+    write_zeroes(str, prepared_format_data);
+    write_zero(str, prepared_format_data);
+    s21_strcat(str, value_str);
+  }
+  return 0;
+}
+
+int n_handler(va_list va, int processed) {
+  int *value = va_arg(va, int *);
+  *value = processed;
+
+  return 0;
+}
+
+int x_handler(char *str, struct PreparedFormatData *prepared_format_data,
+              unsigned long value) {
+  char value_str[1024] = {'\0'};
+  decimal_to_hexoct(value_str, value, prepared_format_data, 16);
+
+  if (prepared_format_data->specifier == 'X') {
+    x_to_upper(value_str);
+  }
+
+  int value_len = s21_strlen(value_str);
+  prepared_format_data->precision -= value_len;
+
+  if (prepared_format_data->precision <= 0) {
+    prepared_format_data->width -= value_len;
+  } else {
+    prepared_format_data->width -= value_len + prepared_format_data->precision;
+  }
+
+  prepared_format_data->counter += value_len;
+
+  if (prepared_format_data->flags.minus != 0) {
+    write_prefix_spaces(&str, prepared_format_data, value);
+    write_zeroes(str, prepared_format_data);
+    write_zero(str, prepared_format_data);
+    s21_strcat(str, value_str);
+    write_space(str, prepared_format_data);
+  } else {
+    write_prefix_spaces(&str, prepared_format_data, value);
+    write_zeroes(str, prepared_format_data);
+    write_zero(str, prepared_format_data);
+    s21_strcat(str, value_str);
+  }
+  return 0;
+}
+
+int write_to_str(char *str, const char *format) {
+  char *end_index = str;
+  while (*end_index != '\0') {  // conditional fixed
+    end_index++;
+  }
+  *end_index++ = *format;
+  *end_index = '\0';
+
+  return 0;
+}
+
+int write_g(char *str, struct PreparedFormatData *prepared_format_data,
+            long double value) {
+  if (prepared_format_data->has_precision == 0) {
+    prepared_format_data->precision = 6;
+  }
+  prepared_format_data->has_precision = 1;
+  if ((fabsl(value) / powl(10, prepared_format_data->precision) > 1) ||
+      (((fabsl(value) * (powl(10, 4))) < 1) && value != 0)) {
+    if (prepared_format_data->precision != 0) {
+      prepared_format_data->precision--;
+    }
+    write_e(str, prepared_format_data, value);
+  } else {
+    if (fabsl(value) < 0.1 && value != 0) {
+      int i = 1;
+      if (prepared_format_data->precision == 0) {
+        prepared_format_data->precision++;
+      }
+      while ((fabsl(value) * (powl(10, i))) < 1) {
+        prepared_format_data->precision++;
+        i++;
+      }
+    } else if (value != 0) {
+      if (prepared_format_data->precision == 0) {
+        prepared_format_data->precision++;
+      } else {
+        prepared_format_data->precision -= double_length(value);
+      }
+    } else {
+      prepared_format_data->precision--;
+    }
+    write_float(str, prepared_format_data, value);
+  }
+  return 0;
+}
+
+int write_e(char *str, struct PreparedFormatData *prepared_format_data,
+            long double value) {
+  char valueStr[1024] = {'\0'};
+  int power = 0;
+  int infNan = is_NaN_or_INF(valueStr, prepared_format_data, value);
+  if (fabsl(value) >= 1.0 && infNan == 0) {
+    while (floorl(fabsl(
+               roundl(value * powl(10, prepared_format_data->precision + 1)) /
+               powl(10, prepared_format_data->precision + 1))) >= 10) {
+      value = value / 10;
+      power++;
+    }
+  } else if (value != 0 && infNan == 0) {
+    while (fabsl(value) < 1) {
+      value = value * 10;
+      power--;
+    }
+  }
+  if (infNan == 0) {
+    ftoa(valueStr, prepared_format_data, value);
+    remove_zeroes_in_g(valueStr, prepared_format_data);  //-g-G
+    if (s21_strchr("gG", prepared_format_data->specifier) != S21_NULL) {
+      if (prepared_format_data->specifier == 'g') {
+        prepared_format_data->specifier = 'e';
+      } else {
+        prepared_format_data->specifier = 'E';
+      }
+    }
+    write_exponent(valueStr, prepared_format_data, power);
+  }
+  minus_handler(str, valueStr, prepared_format_data, value);
+
+  return 0;
+}
+
+int write_float(char *str, struct PreparedFormatData *prepared_format_data,
+                long double value) {
+  char value_str[1024] = {'\0'};
+  int infNan = is_NaN_or_INF(value_str, prepared_format_data, value);
+
+  if (infNan == 0) {
+    ftoa(value_str, prepared_format_data, value);
+    remove_zeroes_in_g(value_str, prepared_format_data);  //-g-G
+  }
+
+  minus_handler(str, value_str, prepared_format_data, value);
+
+  return 0;
+}
+
+int write_double(char *value_str, long double value,
+                 struct PreparedFormatData *prepared_format_data) {
+  if (value == 0.0 && (prepared_format_data->has_precision == 0 ||
+                       (prepared_format_data->has_precision &&
+                        prepared_format_data->precision != 0))) {
+    value_str[0] = '0';
+    prepared_format_data->precision--;
+    prepared_format_data->counter++;
+
+  } else {
     int i = 0;
-    long int copy_num = num;
-// в функцию
-    if ((copy_num == 0 && (specs.accurency || specs.width || specs.space)) ||
-        (copy_num == 0 && (!specs.accurency && !specs.width && !specs.space && !specs.dot))){
+    int sign = 1;
+    if (value < 0.0) {
+      sign *= -1;
+    }
+    int length = double_length(value);
+    i += length - 1;
+    prepared_format_data->precision -= length;
 
-        char symb = '0';
-        str_to_num[i] = symb;
-        i++;
-        size_to_decimal--;
+    while (fabsl(value) >= 1) {
+      char residue = ((int)fmodl(value, 10)) * sign + 48;
+      value_str[i] = residue;
+      value /= 10;
+      i--;
+      prepared_format_data->counter++;
     }
+  }
+  prepared_format_data->width -= s21_strlen(value_str);
 
-    while (copy_num && str_to_num && size_to_decimal){
-        char sym = get_num_char(copy_num % specs.number_system, specs.upper_case);
-        str_to_num[i] = sym;
-        i++;
-        size_to_decimal--;
-        copy_num /= 10;
-    }
-
-    if (flag) num = -num;
-// в функцию
-    if (specs.accurency - i > 0) {
-        specs.accurency -= i;
-        specs.zero = 1;
-    } else {
-        flag = 1;
-    }
-
-    if (size_to_decimal == 1 && specs.zero == 1 && specs.flag_to_size == 1) 
-        specs.zero = 0;
-// в функцию
-    while (specs.zero && str_to_num && (size_to_decimal - specs.flag_to_size > 0) && (specs.accurency || flag)) {
-        if ((size_to_decimal == 1 && specs.flag_to_size == 1))
-            break;
-
-        str_to_num[i] = '0';
-        size_to_decimal--;
-        specs.accurency--;
-        i++;
-    }
-// в функцию
-    if (specs.space && num >= 0 && size_to_decimal){
-        str_to_num[i] = ' ';
-        i++;
-        size_to_decimal--;
-    }
-    if (num < 0 && size_to_decimal) {
-        str_to_num[i] = '-';
-        i++;
-        size_to_decimal--;
-    }
-    if (num > 0 && specs.plus && size_to_decimal) {
-        str_to_num[i] = '+';
-        i++;
-        size_to_decimal--;
-    }
-
-    if (size_to_decimal > 0 && specs.minus == 0) {
-        while ((size_to_decimal - specs.flag_to_size > 0) && str_to_num) {
-            str_to_num[i] = ' ';
-            i++;
-            size_to_decimal--;
-        }
-    }
-
-    return i;
+  return 0;
 }
 
-char *print_decimal(char *res, Spec specs, va_list *input){
+int write_dot(char **value_str,
+              struct PreparedFormatData *prepared_format_data) {
+  while (**value_str != '\0') {
+    (*value_str)++;
+  }
+  **value_str = '.';
+  (*value_str)++;
+  **value_str = '\0';
+  prepared_format_data->counter++;
+  prepared_format_data->width--;
+  prepared_format_data->precision--;
 
-    long int num = 0;
-
-    if (specs.length == 'l') {
-        num = (long int)va_arg(*input, long int);
-    } else if (specs.length == 'h') {
-        num = (int)va_arg(*input, int);
-    } else {
-        num = (int) va_arg(*input, int);
-    }
-
-    size_t size_to_decimal = get_size_of_decimal(&specs, num);
-    char *str_to_num = malloc(sizeof(char) * size_to_decimal);
-
-    if (str_to_num) {
-        // в обратную сторону пуляем
-        int i = decimal_to_string(specs, str_to_num, num, size_to_decimal);
-        // делаем зеркальное пространство наоборот как во мстителях
-        for (int j = i - 1; j >= 0; j--){
-            *res = str_to_num[j];
-            res++;
-        }
-        // если кто то вдруг решил сделать ширину без '-', то заполняем дальше пробелы, зочем????????
-        while ((i < specs.width)){
-            *res = ' ';
-            res++;
-            i++;
-        }
-    }
-
-    if (str_to_num) free(str_to_num);
-
-    return res;
+  return 0;
 }
 
-Spec set_number_system(Spec specs, char format){
-    if (format == 'o') {
-        specs.number_system = 8;
-    } else if (format == 'x' || format == 'X'){
-        specs.number_system = 16;
-    } 
-    if (format == 'X') specs.upper_case = 1;
-
-    return specs;
-}
-
-size_t get_buff_size_hex(Spec *specs, unsigned long int num){
-
-    size_t res = 0;
-
-    unsigned long int copy_num = num;
-
-    if (copy_num && num) {
-        if (specs->number_system == 8){
-            while (copy_num > 0) {
-                copy_num /= 8;
-                res++;
-            }
-        if (specs->hash) res++;
-        } else if (specs->number_system == 16) {
-            while (copy_num > 0) {
-                copy_num /= 16;
-                res++;
-            }
-            if (specs->hash) res += 2;
+int write_prefix_spaces(char **str,
+                        struct PreparedFormatData *prepared_format_data,
+                        unsigned long long value) {
+  if (prepared_format_data->specifier != 'o') {
+    if (prepared_format_data->flags.minus != 0) {
+      if (prepared_format_data->flags.sharp == 1 && value != 0) {
+        prepared_format_data->width -= 2;
+        prepared_format_data->counter += 2;
+        if (prepared_format_data->specifier == 'x') {
+          s21_strcat(*str, "0x");
         } else {
-            while (copy_num > 0) {
-                copy_num /= 10;
-                res++;
-            }
+          s21_strcat(*str, "0X");
         }
+      }
+    } else {
+      if (prepared_format_data->flags.sharp == 1 && value != 0) {
+        prepared_format_data->width -= 2;
+        prepared_format_data->counter += 2;
+        write_space(*str, prepared_format_data);
+        if (prepared_format_data->specifier == 'x') {
+          s21_strcat(*str, "0x");
+        } else {
+          s21_strcat(*str, "0X");
+        }
+      } else {
+        write_space(*str, prepared_format_data);
+      }
     }
-
-
-    if (copy_num == 0 && res == 0 && (specs->accurency || specs->width || specs->space)) {
-        res++;
+  } else {
+    if (prepared_format_data->flags.minus != 0) {
+      if (prepared_format_data->flags.sharp == 1 &&
+          prepared_format_data->precision < 0 && value != 0) {
+        prepared_format_data->width--;
+        prepared_format_data->counter++;
+        s21_strcat(*str, "0");
+      }
+    } else {
+      if (prepared_format_data->flags.sharp == 1 && value != 0) {
+        write_space(*str, prepared_format_data);
+        prepared_format_data->width--;
+        prepared_format_data->counter++;
+        prepared_format_data->precision--;
+        s21_strcat(*str, "0");
+      } else {
+        write_space(*str, prepared_format_data);
+      }
     }
-
-    if ((size_t)specs->width > res) res = specs->width;
-    if ((size_t)specs->accurency > res) res = specs->accurency;
-
-    if (res == 0 && copy_num == 0 && !specs->accurency && !specs->width && !specs->space && !specs->dot)
-        res++;
-
-    printf("%zu\n", res);
-    return res;
+  }
+  return 0;
 }
 
-int u_o_x_X_to_string(char *str_to_num, Spec specs, unsigned long int num, size_t size_to_decimal) {
+int write_zero(char *str, struct PreparedFormatData *prepared_format_data) {
+  if (prepared_format_data->flags.zero != 0 &&
+      prepared_format_data->flags.minus == 0) {
+    while (prepared_format_data->width > 0) {
+      s21_strcat(str, "0");  // s21
+      prepared_format_data->counter++;
+      prepared_format_data->width--;
+    }
+  }
+  return 0;
+}
 
-    int flag = 0;
+int write_exponent(char *value_str,
+                   struct PreparedFormatData *prepared_format_data, int power) {
+  while (*value_str != '\0') {
+    value_str++;
+  }
+  char *start_position = value_str;
+  *value_str = prepared_format_data->specifier;
+  value_str++;
+  if (power < 0) {
+    *value_str = '-';
+  } else {
+    *value_str = '+';
+  }
+  value_str++;
+  if (abs(power) < 10) {
+    *value_str = '0';
+    value_str++;
+    if (power == 0) {
+      *value_str = '0';
+      value_str++;
+    }
+  }
+  prepared_format_data->counter += value_str - start_position;
+  prepared_format_data->width -= value_str - start_position;
+  int i = 0;
+  int sign = 1;
+  if (power < 0) {
+    sign *= -1;
+  }
+  int num = integer_length(power);
+  i += num - 1;
+  while (power != 0) {
+    char ost = (power % 10) * sign + 48;
+    value_str[i] = ost;
+    power /= 10;
+    i--;
+    prepared_format_data->counter++;
+    prepared_format_data->width--;
+  }
+  return 0;
+}
+
+long double mantissa(char **valueStr, long double exponent,
+                     long long *precision,
+                     struct PreparedFormatData *prepared_format_data) {
+  long double mantissa = fabsl(exponent) * powl(10, *precision);
+
+  if (mantissa != 0) {
+    long double tmp = fabsl(exponent) * 10;
+
+    while (tmp < 1 && (*precision) > 0) {
+      tmp = tmp * 10;
+      **valueStr = '0';
+      (*valueStr)++;
+      prepared_format_data->counter++;
+      prepared_format_data->width--;
+      (*precision)--;
+    }
+  }
+  if (double_length(roundl(mantissa)) > double_length(mantissa)) {
+    mantissa = 0;
+  } else {
+    mantissa = roundl(mantissa);
+  }
+  return mantissa;
+}
+
+int write_space(char *str, struct PreparedFormatData *prepared_format_data) {
+  if (prepared_format_data->flags.zero == 0 ||
+      prepared_format_data->flags.minus != 0) {
+    while (prepared_format_data->width > 0) {
+      s21_strcat(str, " ");  // s21
+      prepared_format_data->counter++;
+      prepared_format_data->width--;
+    }
+  }
+  return 0;
+}
+
+int write_int(char *str, struct PreparedFormatData *prepared_format_data,
+              long long value) {
+  char valueStr[1024] = {'\0'};
+  itoa(valueStr, value, prepared_format_data);
+  minus_handler(str, valueStr, prepared_format_data, (long double)value);
+
+  return 0;
+}
+
+int write_unsigned(char *str, struct PreparedFormatData *prepared_format_data,
+                   unsigned long long value) {
+  char valueStr[1024] = {'\0'};
+  utoa(valueStr, value, prepared_format_data);
+  minus_handler(str, valueStr, prepared_format_data, (long double)value);
+
+  return 0;
+}
+
+int write_zeroes(char *str, struct PreparedFormatData *prepared_format_data) {
+  int tmp = prepared_format_data->precision;
+
+  const char ignore[] = "feEgG";
+  while (tmp > 0 &&
+         s21_strchr(ignore, prepared_format_data->specifier) == S21_NULL) {
+    s21_strcat(str, "0");
+    prepared_format_data->counter++;
+    tmp--;
+  }
+  return 0;
+}
+
+int write_sign(char *str, long double value,
+               struct PreparedFormatData *prepared_format_data) {
+  if (prepared_format_data->specifier != 'u') {
+    if (value < 0) {
+      s21_strcat(str, "-");
+      prepared_format_data->counter++;
+    } else if (prepared_format_data->flags.plus != 0) {
+      s21_strcat(str, "+");
+      prepared_format_data->counter++;
+    } else if (prepared_format_data->flags.spase != 0) {
+      s21_strcat(str, " ");
+      prepared_format_data->counter++;
+    }
+  }
+  return 0;
+}
+
+int remove_zero(char *str, struct PreparedFormatData *prepared_format_data) {
+  int end_position = (int)s21_strlen(str) - 1;
+  if (end_position > 0) {
+    while (str[end_position] == '0' && !prepared_format_data->flags.sharp &&
+           prepared_format_data->has_precision) {
+      str[end_position] = '\0';
+      end_position--;
+      prepared_format_data->counter--;
+      prepared_format_data->width++;
+    }
+    if (!prepared_format_data->flags.sharp && str[end_position] == '.') {
+      str[end_position] = '\0';
+      prepared_format_data->counter--;
+      prepared_format_data->width++;
+    }
+  }
+  return 0;
+}
+
+int remove_zeroes_in_g(char *value_str,
+                       struct PreparedFormatData *prepared_format_data) {
+  if (s21_strchr("gG", prepared_format_data->specifier) != S21_NULL) {
+    remove_zero(value_str, prepared_format_data);
+  }
+  return 0;
+}
+
+int decrease_zeroes_width(struct PreparedFormatData *PreparedFormatData) {
+  if (PreparedFormatData->precision > 0) {
+    PreparedFormatData->width -= PreparedFormatData->precision;
+  }
+  return 0;
+}
+
+int decrease_sign_width(long double value,
+                        struct PreparedFormatData *prepared_format_data) {
+  if (prepared_format_data->specifier != 'u') {
+    if (value < 0 || (prepared_format_data->flags.plus != 0 && value >= 0) ||
+        prepared_format_data->flags.spase != 0) {
+      prepared_format_data->width--;
+    }
+  }
+  return 0;
+}
+
+int double_length(long double value) {
+  int length = 0;
+  while (fabsl(value) >= 1) {
+    length++;
+    value /= 10;
+  }
+  return length;
+}
+
+int integer_length(long long int value) {
+  int length = 0;
+  while (value != 0) {
+    length++;
+    value /= 10;
+  }
+  return length;
+}
+
+int unsigned_length(unsigned long long value) {
+  int length = 0;
+  while (value != 0) {
+    length++;
+    value /= 10;
+  }
+
+  return length;
+}
+
+int is_NaN_or_INF(char *value_str,
+                  struct PreparedFormatData *PreparedFormatData,
+                  long double value) {
+  int is_nanInf = 0;
+  if (fabsl(value) == INFINITY) {
+    value_str[0] = 'i';
+    value_str[1] = 'n';
+    value_str[2] = 'f';
+    PreparedFormatData->counter += 3;
+    PreparedFormatData->width -= 3;
+    PreparedFormatData->precision = 0;
+    is_nanInf = 1;
+  } else if (s21_isNan(value)) {
+    value_str[0] = 'n';
+    value_str[1] = 'a';
+    value_str[2] = 'n';
+
+    PreparedFormatData->counter += 3;
+    PreparedFormatData->width -= 3;
+    PreparedFormatData->precision = 0;
+    is_nanInf = 1;
+  }
+  return is_nanInf;
+}
+
+int x_to_upper(char *value_str) {
+  for (s21_size_t i = 0; i < s21_strlen(value_str); i++) {
+    if (value_str[i] >= 'a' && value_str[i] <= 'z') {
+      value_str[i] -= 32;
+    }
+  }
+  return 0;
+}
+
+int s21_atoi(char *str) {
+  int result = 0;
+  int sign = 1;
+  str += s21_strspn(str, " \n\t\v\f\r");
+  if (*str == '+') {
+    str++;
+  }
+  if (*str == '-') {
+    sign = -1;
+    str++;
+  }
+  while (*str >= '0' && *str <= '9') {
+    result = result * 10 + *str++ - '0';
+  }
+  return result * sign;
+}
+
+int utoa(char *value_str, unsigned long long value,
+         struct PreparedFormatData *prepared_format_data) {
+  if (value == 0 && (prepared_format_data->has_precision == 0 ||
+                     (prepared_format_data->has_precision &&
+                      prepared_format_data->precision != 0))) {
+    value_str[0] = '0';
+    prepared_format_data->precision--;
+    prepared_format_data->counter++;
+  } else {
     int i = 0;
-    unsigned long int copy_num = num;
+    int length = unsigned_length(value);
+    i += length - 1;
+    prepared_format_data->precision -= length;
 
-    if (specs.hash && specs.number_system == 8) {
-        specs.flag_to_size = 1;
-    } else if (specs.hash && specs.number_system == 16) {
-        specs.flag_to_size = 2;
+    while (value != 0) {
+      char residue = (value % 10) + 48;
+      value_str[i] = residue;
+      value /= 10;
+      i--;
+      prepared_format_data->counter++;
     }
-// в функцию
-    while (copy_num && str_to_num && size_to_decimal) {
-        char sym = get_num_char(copy_num % specs.number_system, specs.upper_case);
-        str_to_num[i] = sym;
-        i++;
-        size_to_decimal--;
-        copy_num /= specs.number_system;
-    }
+  }
+  prepared_format_data->width -= s21_strlen(value_str);
 
-    if (!copy_num && !num) {
-        str_to_num[i] = '0';
-        i++;
-        size_to_decimal--;
-    }
+  return 0;
+}
 
-    if (flag) num = -num;
-// в функцию
-    if (specs.accurency - i > 0) {
-        specs.accurency -= i;
-        specs.zero = 1;
+int decimal_to_hexoct(char *value_str, unsigned long long value,
+                      struct PreparedFormatData *prepared_format_data,
+                      int base) {
+  const char pattern[17] = {"0123456789abcdef"};
+  char str[1024] = {'\0'};
+  int i = 0;
+  int residue = 0;
+  if (value == 0 && ((prepared_format_data->has_precision == 1 &&
+                      prepared_format_data->precision > 0) ||
+                     (prepared_format_data->has_precision == 0))) {
+    residue = value % base;
+    value = value / base;
+    str[i++] = pattern[residue];
+  } else if (value == 0 && prepared_format_data->specifier == 'o' &&
+             ((prepared_format_data->has_precision == 1 &&
+               prepared_format_data->precision > 0) ||
+              (prepared_format_data->has_precision == 0))) {
+    str[i++] = '0';
+  }
+
+  while (value != 0) {
+    residue = value % base;
+    value = value / base;
+    str[i++] = pattern[residue];
+  }
+  i--;
+
+  int j = 0;
+  while (i >= 0) {
+    value_str[j++] = str[i--];
+  }
+  return 0;
+}
+
+int ftoa(char *value_str, struct PreparedFormatData *prepared_format_data,
+         long double value) {
+  long double tmp = floorl(fabsl(value));
+  if (value < 0) {
+    tmp = -tmp;
+  }
+  long double exponent = value - tmp;
+  long long precision = 6;
+  int has_precision = 1;
+
+  if (prepared_format_data->has_precision != 0) {
+    precision = prepared_format_data->precision;
+
+    if (prepared_format_data->precision == 0) {
+      prepared_format_data->has_precision = 0;
+      tmp = roundl(value);
+      has_precision = 0;
     } else {
-        flag = 1;
+      tmp = floorl(fabsl(roundl(value * powl(10, precision + 1)) / powl(10, precision + 1)));
+      if (value < 0) {
+        tmp = -tmp;
+      }
     }
+  }
+  write_double(value_str, tmp, prepared_format_data);
 
-    if (size_to_decimal == 1 && specs.zero == 1 && specs.flag_to_size == 1)
-        specs.zero = 0;
-// в функцию
-    while (specs.zero && str_to_num && (size_to_decimal - specs.flag_to_size > 0) && (specs.accurency || flag)) {
-        if ((size_to_decimal == 1 && specs.flag_to_size == 1))
-            break;
+  if (has_precision == 1) {
+    write_dot(&value_str, prepared_format_data);
+    tmp = mantissa(&value_str, exponent, &precision, prepared_format_data);
 
-        str_to_num[i] = '0';
-        size_to_decimal--;
-        specs.accurency--;
-        i++;
-    }
-
-    if (copy_num && num) {
-        if (specs.hash && specs.number_system == 8) {
-            str_to_num[i] = '0';
-            i++;
-            size_to_decimal--;
-        } else if (specs.hash && specs.number_system == 16) {
-            if (specs.upper_case) {
-                str_to_num[i] = 'X';
-                i++;
-                str_to_num[i] = '0';
-                i++;
-                size_to_decimal -= 2;
-            } else if (!specs.upper_case) {
-                str_to_num[i] = 'x';
-                i++;
-                str_to_num[i] = '0';
-                i++;
-                size_to_decimal -= 2;
-            }
-        }
-    }
-
-
-    return i;
-}
-
-char *print_hex(char *res, Spec specs, va_list *input){
-
-    unsigned long int num = 0;
-    if (specs.length == 'l') {
-        num = (unsigned long int)va_arg(*input, unsigned long int);
-    } else if (specs.length == 'h') {
-        num = (unsigned int)va_arg(*input, unsigned int);
+    if (tmp == 0) {
+      for (int i = 0; i < precision; i++) {
+        *value_str = '0';
+        prepared_format_data->counter++;
+        prepared_format_data->width--;
+        prepared_format_data->precision--;
+        value_str++;
+      }
     } else {
-        num = (unsigned int)va_arg(*input, unsigned int);
+      write_double(value_str, tmp, prepared_format_data);
     }
 
-    size_t size_to_num = get_buff_size_hex(&specs, num);
-    char *buffer = malloc(sizeof(char) * size_to_num);
-
-    int i = u_o_x_X_to_string(buffer, specs, num, size_to_num);
-
-    if (buffer) {
-        for (int j = i - 1; j >= 0; j--){
-            *res = buffer[j];
-            res++;
-        }
-        // если кто то вдруг решил сделать ширину без '-', то заполняем дальше пробелы, зочем????????
-        // теперь пон зочем ^_^
-        while ((i < specs.width)){
-            *res = ' ';
-            res++;
-            i++;
-        }
-    }
-    
-    if (buffer) free(buffer);
-
-    return res;
+  } else if (prepared_format_data->flags.sharp == 1) {
+    write_dot(&value_str, prepared_format_data);
+  }
+  return 0;
 }
 
-char *parser(char *res, const char *format, Spec specs, va_list *input){
-
-    if (*format == 'd' || *format == 'i'){
-        res = print_decimal(res, specs, input);
-    } else if (*format == 'u' || *format == 'o' || *format == 'x' || *format == 'X') {
-        specs = set_number_system(specs, *format);
-        res = print_hex(res, specs, input);
+int itoa(char *value_str, long long int value,
+         struct PreparedFormatData *prepared_format_data) {
+  if (value == 0 && (prepared_format_data->has_precision == 0 ||
+                     (prepared_format_data->has_precision &&
+                      prepared_format_data->precision != 0))) {
+    value_str[0] = '0';
+    prepared_format_data->precision--;
+    prepared_format_data->counter++;
+  } else {
+    int i = 0;
+    int sign = 1;
+    if (value < 0) {
+      sign = -1;
     }
-    return res;
-}
+    int length = integer_length(value);
+    i += length - 1;
+    prepared_format_data->precision -= length;
 
-int s21_sprintf(char *res, const char *format, ...){
-
-    char specifiers[] = "diuoxXcsnpfFeEgG%";
-
-    char *start = res;
-    // int res_lenght = sizeof(&res);
-    // printf("%d\n", res_lenght);
-
-    // for (long unsigned int i = 0; i < res_lenght; i++) {
-    //     res[i] = '\0';
-    // }
-
-
-
-    va_list input = {0};
-    va_start(input, format);
-    
-    while (*format) {
-        if (*format == '%') {
-            format++;
-            Spec specs = {0};
-            specs.number_system = 10;
-            format = set_specs(&specs, format, &input);
-            while (!strchr(specifiers, *format)) format++;
-            res = parser(res, format, specs, &input);
-            *res = '\0';
-        } else {
-            *res = *format;
-            res++;
-            *res = '\0';
-        }
-        format++;
+    while (value != 0) {
+      char residue = (value % 10) * sign + 48;
+      value_str[i] = residue;
+      value /= 10;
+      i--;
+      prepared_format_data->counter++;
     }
-
-    va_end(input);
-
-    return res - start;
-}
-
-int main() {
-
-//    "%+-014.6hd adsdsa: %ld dsaads: %s %x";
-
-//   не прошло тесты:  int res_diff_count = s21_sprintf(res, "%+-3.6hd", 123213); sprintf(res2, "%+-3.6hd", 123213);
-
-// "%+-014.6hd"
-
-    // char res[256] = "";
-    // char res2[256] = "";
-
-    // int res_diff_count = s21_sprintf(res, "%#-10x", 858158158);
-    // sprintf(res2, "%5x", 858158158);
-
-    // printf("%d\n", res_diff_count);
-
-    // printf("%s|\n", res2);
-    // printf("%s|\n", res);
-
-    char str1[10000];
-    char str2[10000];
-
-    int val = 69;
-
-    int res_int_1 = s21_sprintf(str1, "%0i %d %4.*i %013d %d", 5, -10431, 5311, 0, -5818181);
-    int res_int_2 = sprintf(str2, "%0i %d %4.*i %013d %d", 5, -10431, 5311, 0, -5818181);      
-
-    printf("%s|\n", str1);
-    printf("%s|\n", str2);
-
-    printf("%d %d\n", res_int_2, res_int_1);
+  }
+  prepared_format_data->width -= s21_strlen(value_str);
+  return 0;
 }

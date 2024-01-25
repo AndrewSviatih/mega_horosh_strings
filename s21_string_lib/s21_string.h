@@ -10,6 +10,7 @@
 #include "string.h"
 #include "stdarg.h"
 #include "stdint.h"
+#include <math.h>
 
 #define S21_INT32_MAX 2147483647
 #define S21_INT32_MIN -2147483648

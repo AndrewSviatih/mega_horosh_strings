@@ -590,35 +590,144 @@ char *print_p(char *res, Spec *specs, va_list *input) {
 
 }
 
-Spec set_specs_float(Spec specs, char *format) {
+Spec set_specs_float(Spec specs, char format) {
 
-    if (*format == 'g' || *format == 'G') {
+    if (format == 'g' || format == 'G') {
         specs.g = 1;
-    } else if (*format == 'e' || *format == 'E') {
+    } else if (format == 'e' || format == 'E') {
         specs.e = 1;
     }
-    if (*format == 'G' || *format == 'E' || *format == 'F') specs.upper_case = 1;
+    if (format == 'G' || format == 'E' || format == 'F') specs.upper_case = 1;
     return specs;
 }
 
-size_t get_size_to_double(Spec *specs, long double num) {
-
+void reverse(char* str, int len) 
+{ 
+    int i = 0, j = len - 1, temp; 
+    while (i < j) { 
+        temp = str[i]; 
+        str[i] = str[j]; 
+        str[j] = temp; 
+        i++; 
+        j--; 
+    } 
+} 
+ 
+// Converts a given integer x to string str[]. 
+// d is the number of digits required in the output. 
+// If d is more than the number of digits in x, 
+// then 0s are added at the beginning. 
+int intToStr(size_t x, char str[], size_t d) 
+{ 
+    size_t i = 0;
+    if (x == 0) {
+        str[i++] = '0';
+    } else {
+        while (x) { 
+        str[i++] = (x % 10) + '0'; 
+        x = x / 10; 
+        } 
+ 
+        // If number of digits required is more, then 
+        // add 0s at the beginning 
+        while (i < d) 
+            str[i++] = '0'; 
     
-
+        reverse(str, i); 
+    }
+    
+    str[i] = '\0'; 
+    return i; 
+} 
+ 
+// Converts a floating-point/double number to a string. 
+void ftoa(long double  n, char* res, int afterpoint, Spec specs) 
+{ 
+    // Extract integer part 
+    size_t ipart = (size_t)n; 
+ 
+    // Extract floating part 
+    long double fpart = n - (long double)ipart; 
+ 
+    // convert integer part to string 
+    size_t i = intToStr(ipart, res, 0); 
+ 
+    // check for display option after point 
+    if (afterpoint != 0 && !specs.dot) { 
+        res[i] = '.'; // add dot 
+ 
+        // Get the value of fraction part upto given no. 
+        // of points after dot. The third parameter 
+        // is needed to handle cases like 233.007
+        
+        fpart = roundl(fpart * pow(10, afterpoint)) / pow(10, afterpoint);
+        fpart = fpart * pow(10, afterpoint);
+        intToStr(fpart, res + i + 1, afterpoint); 
+    }
 }
 
-char *print_float(char *res, Spec specs, char format, va_list *input) {
+char *print_float(char *res, Spec specs, va_list *input) {
 
     long double num = 0;
-    int e = 0;
-    if (format == 'L') {
+    if (specs.length == 'L') {
         num = va_arg(*input, long double);
     } else {
         num = va_arg(*input, double);
     }
 
-    size_t size_to_double = get_size_to_double(&specs, num);
+    if (!specs.dot) {
+        specs.accurency = 6;
+    }
 
+    char *buffer = malloc(sizeof(char) * 2056);
+    ftoa(num, buffer, specs.accurency, specs);
+
+    if (!specs.minus && specs.width) {
+        if (specs.zero) {
+            while ((size_t)specs.width > strlen(buffer)) {
+                *res = '0';
+                res++;
+                specs.width--;
+            }
+        } else {
+            while ((size_t)specs.width > strlen(buffer)) {
+                *res = ' ';
+                res++;
+                specs.width--;
+            }
+        }
+    }
+
+
+    if (specs.space) {
+        *res = ' ';
+        res++;
+        specs.width--;
+    }
+    
+    for (int i = 0; buffer[i] != '\0'; i++) {
+        *res = buffer[i];
+        res++;
+    }
+
+    if (specs.minus && specs.width) {
+        if (specs.zero) {
+            while ((size_t)specs.width > strlen(buffer)) {
+                *res = '0';
+                res++;
+                specs.width--;
+            }
+        } else {
+            while ((size_t)specs.width > strlen(buffer)) {
+                *res = ' ';
+                res++;
+                specs.width--;
+            }
+        }
+    }
+
+    free(buffer);
+    return res;
 }
 
 char *parser(char *res, const char *format, Spec specs, va_list *input, char *first_char){
@@ -642,7 +751,7 @@ char *parser(char *res, const char *format, Spec specs, va_list *input, char *fi
         res = print_c(res, specs, '%');
     } else if (*format == 'f' || *format == 'F') {
         specs = set_specs_float(specs, *format);
-
+        res = print_float(res, specs, input);
     }
     return res;
 }
@@ -677,30 +786,29 @@ int s21_sprintf(char *res, const char *format, ...){
     return res - first_char;
 }
 
-// int main() {
+int main() {
 
-// //    "%+-014.6hd adsdsa: %ld dsaads: %s %x";
+//    "%+-014.6hd adsdsa: %ld dsaads: %s %x";
 
-// //   не прошло тесты:  int res_diff_count = s21_sprintf(res, "%+-3.6hd", 123213); sprintf(res2, "%+-3.6hd", 123213);
+//   не прошло тесты:  int res_diff_count = s21_sprintf(res, "%+-3.6hd", 123213); sprintf(res2, "%+-3.6hd", 123213);
 
-// // "%+-014.6hd"
+// "%+-014.6hd"
 
-//     // int res_diff_count = s21_sprintf(res, "%#-10x", 858158158);
-//     // sprintf(res2, "%5x", 858158158);
+    // int res_diff_count = s21_sprintf(res, "%#-10x", 858158158);
+    // sprintf(res2, "%5x", 858158158);
 
-//     char str1[10000];
-//     char str2[10000];
+    char str1[10000];
+    char str2[10000];
 
-//     char *format = "%p";
-//     char *val = NULL;
+    char *format = "%lf %Lf";
 
-//     int res_int_1 = s21_sprintf(
-//         str1, format, val);
-//     int res_int_2 = sprintf(
-//         str2, format, val);
+    double val4 = 9851.51351;
+    long double val5 = 95919539159.53151351131;
+    int res_int_1 = s21_sprintf(str1, format, val4, val5);
+    int res_int_2 = sprintf(str2, format, val4, val5);
 
-//     printf("%s|\n", str2);
-//     printf("%s|\n", str1);
+    printf("%s|\n", str2);
+    printf("%s|\n", str1);
     
-//     printf("%d %d\n", res_int_2, res_int_1);
-// }
+    printf("%d %d\n", res_int_2, res_int_1);
+}
