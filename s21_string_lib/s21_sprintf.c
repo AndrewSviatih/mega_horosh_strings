@@ -622,9 +622,9 @@ int intToStr(size_t x, char str[], size_t d, Spec *specs)
         while (i < d) 
             str[i++] = '0';
 
-        if (specs.negetive) {
+        if (specs->negetive) {
             str[i++] = '-';
-            specs.negetive = 0;
+            specs->negetive = 0;
         }
 
         reverse(str, i); 
@@ -634,65 +634,79 @@ int intToStr(size_t x, char str[], size_t d, Spec *specs)
     return i; 
 } 
  
-// Converts a floating-point/double number to a string. 
-void ftoa(long double  n, char* res, int afterpoint, Spec specs) 
+// Converts a floating-point/double number to a string-> 
+void ftoa(long double  n, char* res, int afterpoint, Spec *specs) 
 {
+    size_t ipart;
+    long double fpart;
     if (n < 0) {
         n = -n;
-        specs.negetive = 1;
+        specs->negetive = 1;
     }
-    size_t ipart = (size_t)n;
-
-    long double fpart = n - (long double)ipart; 
+    if (specs->accurency == 0 && specs->dot) {
+        ipart = roundl(n);
+    } else {
+        ipart = (size_t)n;
+        fpart = n - (long double)ipart; 
+    }
 
     size_t i = intToStr(ipart, res, 0, specs);
 
-    if (afterpoint != 0 || !specs.dot) {
+    if (afterpoint != 0 || !specs->dot) {
         res[i] = '.'; // add dot
         
-        fpart = roundl(fpart * pow(10, afterpoint)) / pow(10, afterpoint);
-        fpart = fpart * pow(10, afterpoint);
-        intToStr(fpart, res + i + 1, afterpoint, specs);
+        if (ipart || fpart) {
+            fpart = roundl(fpart * pow(10, afterpoint)) / pow(10, afterpoint);
+            fpart = fpart * pow(10, afterpoint);
+            intToStr(fpart, res + i + 1, afterpoint, specs);
+        } else {
+            i++;
+            while (specs->accurency) {
+                res[i] = '0';
+                i++;
+                specs->accurency--;
+            }
+        }
+        
     }
 }
 
-char *print_float(char *res, Spec specs, va_list *input) {
+char *print_float(char *res, Spec *specs, va_list *input) {
 
     long double num = 0;
-    if (specs.length == 'L') {
+    if (specs->length == 'L') {
         num = va_arg(*input, long double);
     } else {
         num = va_arg(*input, double);
     }
 
-    if (!specs.dot) {
-        specs.accurency = 6;
-    }
+    if (!specs->dot) specs->accurency = 6;
+    
+    char *buffer = malloc(sizeof(char) * 1056);
+    ftoa(num, buffer, specs->accurency, specs);
 
-    char *buffer = malloc(sizeof(char) * 2056);
-    ftoa(num, buffer, specs.accurency, specs);
-
-    if (!specs.minus && specs.width) {
-        if (specs.zero) {
-            while ((size_t)specs.width > strlen(buffer)) {
+    if (!specs->minus && specs->width) {
+        if (specs->zero) {
+            while ((size_t)specs->width > strlen(buffer)) {
                 *res = '0';
                 res++;
-                specs.width--;
+                specs->width--;
             }
         } else {
-            while ((size_t)specs.width > strlen(buffer)) {
+            while ((size_t)specs->width > strlen(buffer)) {
                 *res = ' ';
                 res++;
-                specs.width--;
+                specs->width--;
             }
         }
     }
 
-
-    if (specs.space) {
-        *res = ' ';
-        res++;
-        specs.width--;
+    if (specs->space) {
+        if (num > 0 && specs->minus) {
+            *res = ' ';
+            res++;
+            specs->width--;
+        }
     }
     
     for (int i = 0; buffer[i] != '\0'; i++) {
@@ -700,18 +714,18 @@ char *print_float(char *res, Spec specs, va_list *input) {
         res++;
     }
 
-    if (specs.minus && specs.width) {
-        if (specs.zero) {
-            while ((size_t)specs.width > strlen(buffer)) {
+    if (specs->minus && specs->width) {
+        if (specs->zero) {
+            while (specs->width > strlen(buffer)) {
                 *res = '0';
                 res++;
-                specs.width--;
+                specs->width--;
             }
         } else {
-            while ((size_t)specs.width > strlen(buffer)) {
+            while (specs->width > strlen(buffer)) {
                 *res = ' ';
                 res++;
-                specs.width--;
+                specs->width--;
             }
         }
     }
@@ -741,7 +755,7 @@ char *parser(char *res, const char *format, Spec specs, va_list *input, char *fi
         res = print_c(res, specs, '%');
     } else if (*format == 'f' || *format == 'F') {
         specs = set_specs_float(specs, *format);
-        res = print_float(res, specs, input);
+        res = print_float(res, &specs, input);
     }
     return res;
 }
@@ -778,22 +792,30 @@ int s21_sprintf(char *res, const char *format, ...){
 
 int main() {
 
-//    "%+-014.6hd adsdsa: %ld dsaads: %s %x";
+// //    "%+-014.6hd adsdsa: %ld dsaads: %s %x";
 
-//   не прошло тесты:  int res_diff_count = s21_sprintf(res, "%+-3.6hd", 123213); sprintf(res2, "%+-3.6hd", 123213);
+// //   не прошло тесты:  int res_diff_count = s21_sprintf(res, "%+-3.6hd", 123213); sprintf(res2, "%+-3.6hd", 123213);
 
-// "%+-014.6hd"
+// // "%+-014.6hd"
 
-    // int res_diff_count = s21_sprintf(res, "%#-10x", 858158158);
-    // sprintf(res2, "%5x", 858158158);
+//     // int res_diff_count = s21_sprintf(res, "%#-10x", 858158158);
+//     // sprintf(res2, "%5x", 858158158);
 
     char str1[10000];
     char str2[10000];
 
-    char *format = "%.15Lf";
-    long double val = -15.35581134;
-    int res_int_1 = s21_sprintf(str1, format, val);
-    int res_int_2 = sprintf(str2, format, val);
+    char format[] = "%- 0.0ld %- 0.0lf";
+    // float val = 0;
+    int res_int_1 = s21_sprintf(str1, format, 166513.9232);
+    int res_int_2 = sprintf(str2, format, 166513.9232);
+
+    // char *format = "% lf % Lf";
+
+    // double val4 = 9851.51359;
+    // long double val5 = 95919539159.53151351131;
+
+    // int res_int_1 = s21_sprintf(str1, format, val4, val5);
+    // int res_int_2 = sprintf(str2, format, val4, val5);
 
     printf("%s|\n", str2);
     printf("%s|\n", str1);
