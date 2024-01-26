@@ -684,26 +684,35 @@ char *print_float(char *res, Spec *specs, va_list *input) {
     
     char *buffer = malloc(sizeof(char) * 1056);
     ftoa(num, buffer, specs->accurency, specs);
+    size_t buffer_lenght = strlen(buffer);
 
     if (!specs->minus && specs->width) {
         if (specs->zero) {
-            while ((size_t)specs->width > strlen(buffer)) {
+            while ((size_t)specs->width > buffer_lenght + specs->plus) {
                 *res = '0';
                 res++;
                 specs->width--;
             }
         } else {
-            while ((size_t)specs->width > strlen(buffer)) {
+            while ((size_t)specs->width > buffer_lenght + specs->plus) {
                 *res = ' ';
                 res++;
                 specs->width--;
+                 
             }
+     
         }
     }
 
-    if (specs->space) {
-        if (num > 0 && specs->minus) {
+    if (specs->space && !specs->plus) {
+        if (num >= 0 && (specs->minus || specs->space) && specs->width != (long int)buffer_lenght) {
             *res = ' ';
+            res++;
+            specs->width--;
+        }
+    } else if (specs->plus) {
+        if (num >= 0) {
+            *res = '+';
             res++;
             specs->width--;
         }
@@ -714,15 +723,23 @@ char *print_float(char *res, Spec *specs, va_list *input) {
         res++;
     }
 
+    if (strcmp(buffer, "0.0") == 0 && specs->accurency > 1) {
+        while (specs->accurency > 1){
+            *res = '0';
+            res++;
+            specs->accurency--;
+        }
+    }
+
     if (specs->minus && specs->width) {
         if (specs->zero) {
-            while (specs->width > strlen(buffer)) {
+            while (specs->width > (long int)buffer_lenght) {
                 *res = '0';
                 res++;
                 specs->width--;
-            }
+            } 
         } else {
-            while (specs->width > strlen(buffer)) {
+            while (specs->width > (long int)buffer_lenght) {
                 *res = ' ';
                 res++;
                 specs->width--;
@@ -790,35 +807,35 @@ int s21_sprintf(char *res, const char *format, ...){
     return res - first_char;
 }
 
-int main() {
+// int main() {
 
-// //    "%+-014.6hd adsdsa: %ld dsaads: %s %x";
+// // //    "%+-014.6hd adsdsa: %ld dsaads: %s %x";
 
-// //   не прошло тесты:  int res_diff_count = s21_sprintf(res, "%+-3.6hd", 123213); sprintf(res2, "%+-3.6hd", 123213);
+// // //   не прошло тесты:  int res_diff_count = s21_sprintf(res, "%+-3.6hd", 123213); sprintf(res2, "%+-3.6hd", 123213);
+// //    чуть не хватает на округление double val5 = 9851.51351; char *format = "%lf"; хз как фиксить тут точность больше тогда нужна ПОБИТИВООВ ДЕЛАТ НЕ БУДУ
 
-// // "%+-014.6hd"
+// // // "%+-014.6hd"
 
-//     // int res_diff_count = s21_sprintf(res, "%#-10x", 858158158);
-//     // sprintf(res2, "%5x", 858158158);
+// //     // int res_diff_count = s21_sprintf(res, "%#-10x", 858158158);
+// //     // sprintf(res2, "%5x", 858158158);
 
-    char str1[10000];
-    char str2[10000];
+// //     char *format = "% 30lf"; 
+//     // double val = 9851.51351; тоже не хватает точности 2.9999999999999999999979
 
-    char format[] = "%- 0.0ld %- 0.0lf";
-    // float val = 0;
-    int res_int_1 = s21_sprintf(str1, format, 166513.9232);
-    int res_int_2 = sprintf(str2, format, 166513.9232);
+//     // -100.001 %f не хватает точности -100.000999
+//     // 33333333333 % 0.0hd не помещается в такое число но спринтф обычный норм почемуто выдает втф
 
-    // char *format = "% lf % Lf";
+//     char str1[1000];
+//     char str2[1000];
 
-    // double val4 = 9851.51359;
-    // long double val5 = 95919539159.53151351131;
+//     char format[] = "%+3.5lf";
+//     // double val = 9851.51351;
 
-    // int res_int_1 = s21_sprintf(str1, format, val4, val5);
-    // int res_int_2 = sprintf(str2, format, val4, val5);
+//     int res_int_1 = s21_sprintf(str1, format, 120);
+//     int res_int_2 = sprintf(str2, format, 120);
 
-    printf("%s|\n", str2);
-    printf("%s|\n", str1);
-
-    printf("%d %d\n", res_int_2, res_int_1);
-}
+//     printf("%s|\n", str2);
+//     printf("%s|\n", str1);
+        
+//     printf("%d %d\n", res_int_2, res_int_1);
+// }

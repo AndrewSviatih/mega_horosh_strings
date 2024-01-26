@@ -866,6 +866,19 @@ START_TEST(float_huge) {
     ck_assert_str_eq(str1, str2);
 }
 END_TEST
+
+START_TEST(float_accurency_space) {
+    char str1[BUFF_SIZE];
+    char str2[BUFF_SIZE];
+    char *format = "% 30lf";
+    double val = 9851.51351;
+    ck_assert_int_eq(s21_sprintf(str1, format, val),
+                     sprintf(str2, format, val));
+
+    ck_assert_str_eq(str1, str2);
+}
+END_TEST
+
 // БАГАНУЛСЯ ТЕСТ ХЗ
 // START_TEST(float_flags) {
 //     char str1[BUFF_SIZE];
@@ -1119,28 +1132,112 @@ START_TEST(test_many_int) {
 }
 END_TEST
 
-// START_TEST(test_one_float) {
-//     char str1[BUFF_SIZE];
-//     char str2[BUFF_SIZE];
+START_TEST(float_space_0) {
+    char str1[BUFF_SIZE];
+    char str2[BUFF_SIZE];
 
-//     ck_assert_int_eq(s21_sprintf(str1, "%f", 0.0001),
-//                      sprintf(str2, "%f", 0.0001));
+    char format[] = "%- 0.0ld %- 0.0lf";
+    float val = 166513.3232;
 
-//     ck_assert_str_eq(str1, str2);
-// }
-// END_TEST
+    ck_assert_int_eq(s21_sprintf(str1, format, val, val),
+                     sprintf(str2, format, val, val));
 
-// START_TEST(test_many_float) {
-//     char str1[BUFF_SIZE];
-//     char str2[BUFF_SIZE];
+    ck_assert_str_eq(str1, str2);
+}
+END_TEST
 
-//     ck_assert_int_eq(
-//         s21_sprintf(str1, "%f%f%f%f", -999.666, 0.0001, 666.999, -100.001),
-//         sprintf(str2, "%f%f%f%f", -999.666, 0.0001, 666.999, -100.001));
+START_TEST(float_space_eq_width) {
+    char str1[BUFF_SIZE];
+    char str2[BUFF_SIZE];
 
-//     ck_assert_str_eq(str1, str2);
-// }
-// END_TEST
+    char format[] = "% 4.0ld";
+    float val = 1234.02194;
+
+    ck_assert_int_eq(s21_sprintf(str1, format, val),
+                     sprintf(str2, format, val));
+
+    ck_assert_str_eq(str1, str2);
+}
+END_TEST
+
+START_TEST(float_space_1) {
+    char str1[BUFF_SIZE];
+    char str2[BUFF_SIZE];
+
+    char format[] = "% 0.0ld % 0.0lf";
+    float val = 166513.3232;
+
+    ck_assert_int_eq(s21_sprintf(str1, format, val, val),
+                     sprintf(str2, format, val, val));
+
+    ck_assert_str_eq(str1, str2);
+}
+END_TEST
+
+START_TEST(float_space_2) {
+    char str1[BUFF_SIZE];
+    char str2[BUFF_SIZE];
+
+    char format[] = "%- 0.0ld %- 0.0lf";
+    float val = -166513.3232;
+
+    ck_assert_int_eq(s21_sprintf(str1, format, val, val),
+                     sprintf(str2, format, val, val));
+
+    ck_assert_str_eq(str1, str2);
+}
+END_TEST
+
+START_TEST(float_space_3) {
+    char str1[BUFF_SIZE];
+    char str2[BUFF_SIZE];
+
+    char format[] = "%.0ld";
+    float val = -166513.3232;
+
+    ck_assert_int_eq(s21_sprintf(str1, format, val),
+                     sprintf(str2, format, val));
+
+    ck_assert_str_eq(str1, str2);
+}
+END_TEST
+
+START_TEST(float_space_4) {
+    char str1[BUFF_SIZE];
+    char str2[BUFF_SIZE];
+
+    char format[] = "% 0.0ld";
+    float val = -166513.3232;
+
+    ck_assert_int_eq(s21_sprintf(str1, format, val),
+                     sprintf(str2, format, val));
+
+    ck_assert_str_eq(str1, str2);
+}
+END_TEST
+
+START_TEST(test_one_float) {
+    char str1[BUFF_SIZE];
+    char str2[BUFF_SIZE];
+
+    ck_assert_int_eq(s21_sprintf(str1, "%f", 0.0001),
+                     sprintf(str2, "%f", 0.0001));
+
+    ck_assert_str_eq(str1, str2);
+}
+END_TEST
+
+START_TEST(test_many_float) {
+    char str1[BUFF_SIZE];
+    char str2[BUFF_SIZE];
+
+    ck_assert_int_eq(
+        s21_sprintf(str1, "%f%f%f%f", -999.666, 0.0001, 666.999, -100.001),
+        sprintf(str2, "%f%f%f%f", -999.666, 0.0001, 666.999, -100.001));
+
+    ck_assert_str_eq(str1, str2);
+}
+END_TEST
 
 START_TEST(test_one_unsigned_dec) {
     char str1[BUFF_SIZE];
@@ -2376,8 +2473,15 @@ Suite *suite_sprintf(void) {
     tcase_add_test(tc, float_precision_huge);
     tcase_add_test(tc, float_precision_huge_negative);
     tcase_add_test(tc, float_huge);
+    tcase_add_test(tc, float_space_0);
+    tcase_add_test(tc, float_space_1);
+    tcase_add_test(tc, float_space_2);
+    tcase_add_test(tc, float_space_3);
+    tcase_add_test(tc, float_space_4);
     // tcase_add_test(tc, float_flags);
     tcase_add_test(tc, float_many);
+    tcase_add_test(tc, float_space_eq_width);
+    tcase_add_test(tc, float_accurency_space);
     // tcase_add_test(tc, e_precision);
     // tcase_add_test(tc, e_precision_zero);
     // tcase_add_test(tc, e_precision_empty);
@@ -2398,8 +2502,8 @@ Suite *suite_sprintf(void) {
     tcase_add_test(tc, test_many_dec);
     tcase_add_test(tc, test_one_int);
     tcase_add_test(tc, test_many_int);
-    // tcase_add_test(tc, test_one_float);
-    // tcase_add_test(tc, test_many_float);
+    tcase_add_test(tc, test_one_float);
+    tcase_add_test(tc, test_many_float);
     tcase_add_test(tc, test_one_unsigned_dec);
     tcase_add_test(tc, test_many_unsigned_dec);
     tcase_add_test(tc, test_one_char_with_alignment_left);
