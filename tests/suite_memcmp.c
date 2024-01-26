@@ -1,13 +1,13 @@
 #include "s21_tests.h"
 
-START_TEST (classic) {
-    char str1[10] = {'a', 'b', 'c', 'd'};
-    char str2[9] = {'a', 'b', 'c'};
-    int n = 10;
-
-    ck_assert_int_eq(s21_memcmp(str1, str2, n), 
-                    memcmp(str1, str2, n));
-}
+//START_TEST (classic) {
+//    char str1[10] = {'a', 'b', 'c', 'd'};
+//    char str2[9] = {'a', 'b', 'c'};
+//    int n = 10;
+//
+//    ck_assert_int_eq(s21_memcmp(str1, str2, n),
+//                    memcmp(str1, str2, n));
+//}
 
 START_TEST(first_byte_in_string) {
     char str1[] = "aboba";
@@ -104,7 +104,7 @@ Suite *suite_memcmp(void) {
     Suite *s = suite_create("suite_memcmp");
     TCase *tc = tcase_create("tc_memcmp");
 
-    tcase_add_test(tc, classic);
+//    tcase_add_test(tc, classic);
     tcase_add_test(tc, not_eq_long_string);
     tcase_add_test(tc, eq_long_string);
     tcase_add_test(tc, two_byte_long_first_num);

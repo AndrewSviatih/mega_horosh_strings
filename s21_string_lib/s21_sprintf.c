@@ -280,7 +280,6 @@ Spec set_number_system(Spec specs, char format){
         specs.number_system = 16;
     } 
     if (format == 'X') specs.upper_case = 1;
-
     return specs;
 }
 

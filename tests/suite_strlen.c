@@ -7,6 +7,13 @@ START_TEST(empty) {
                      strlen(src));
 } END_TEST
 
+START_TEST(aboba_lecture) {
+    char src[] = "sadsda";
+
+    ck_assert_int_eq(s21_strlen(src),
+                     strlen(src));
+} END_TEST
+
 START_TEST(num) {
     char src[] = "987623456124678";
 
@@ -68,6 +75,7 @@ Suite *suite_strlen(void){
     TCase *tc = tcase_create("tc_strlen");
 
     tcase_add_test(tc, empty);
+    tcase_add_test(tc, aboba_lecture);
     tcase_add_test(tc, abisal_no_dal);
     tcase_add_test(tc, num);
     tcase_add_test(tc, string);
