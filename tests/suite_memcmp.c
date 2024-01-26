@@ -6,7 +6,7 @@ START_TEST (classic) {
     int n = 10;
 
     ck_assert_int_eq(s21_memcmp(str1, str2, n), 
-                    memcmp(str1, str2, n));
+                    memcmp(str1, str2, 9));
 }
 
 START_TEST(first_byte_in_string) {

@@ -471,25 +471,20 @@ char *print_hex(char *res, Spec specs, va_list *input){
 char *print_c(char *res, Spec specs, char symb) {
 
     char *ptr = NULL;
-    int i = 0;
-
 
     while (!specs.minus && specs.width - 1 > 0) {
         *res = ' ';
         res++;
-        i++;
         specs.width--;
     }
 
     if (symb < 127) {
         *res = symb;
         res++;
-        i++;
         if (specs.minus) {
             while (specs.width - 1 > 0) {
                 *res = ' ';
                 res++;
-                i++;
                 specs.width--;
             }
         }
@@ -506,7 +501,6 @@ char *print_s(char *res, Spec specs, va_list *input){
 
     if (string_input) {
         int tmp_width = specs.width;
-        int i = 0;
 
         if ((size_t)specs.width < strlen(string_input)) {
             specs.width = strlen(string_input);
@@ -533,7 +527,6 @@ char *print_s(char *res, Spec specs, va_list *input){
             *res = *string_input;
             res++;
             string_input++;
-            i++;
             specs.accurency--;
         }
 
@@ -612,27 +605,28 @@ void reverse(char* str, int len)
         j--; 
     } 
 } 
- 
-// Converts a given integer x to string str[]. 
-// d is the number of digits required in the output. 
-// If d is more than the number of digits in x, 
-// then 0s are added at the beginning. 
-int intToStr(size_t x, char str[], size_t d) 
+
+int intToStr(size_t x, char str[], size_t d, Spec *specs)
 { 
     size_t i = 0;
     if (x == 0) {
         str[i++] = '0';
     } else {
         while (x) { 
-        str[i++] = (x % 10) + '0'; 
-        x = x / 10; 
+            str[i++] = (x % 10) + '0';
+            x = x / 10;
         } 
  
         // If number of digits required is more, then 
         // add 0s at the beginning 
         while (i < d) 
-            str[i++] = '0'; 
-    
+            str[i++] = '0';
+
+        if (specs.negetive) {
+            str[i++] = '-';
+            specs.negetive = 0;
+        }
+
         reverse(str, i); 
     }
     
@@ -642,27 +636,23 @@ int intToStr(size_t x, char str[], size_t d)
  
 // Converts a floating-point/double number to a string. 
 void ftoa(long double  n, char* res, int afterpoint, Spec specs) 
-{ 
-    // Extract integer part 
-    size_t ipart = (size_t)n; 
- 
-    // Extract floating part 
+{
+    if (n < 0) {
+        n = -n;
+        specs.negetive = 1;
+    }
+    size_t ipart = (size_t)n;
+
     long double fpart = n - (long double)ipart; 
- 
-    // convert integer part to string 
-    size_t i = intToStr(ipart, res, 0); 
- 
-    // check for display option after point 
-    if (afterpoint != 0 && !specs.dot) { 
-        res[i] = '.'; // add dot 
- 
-        // Get the value of fraction part upto given no. 
-        // of points after dot. The third parameter 
-        // is needed to handle cases like 233.007
+
+    size_t i = intToStr(ipart, res, 0, specs);
+
+    if (afterpoint != 0 || !specs.dot) {
+        res[i] = '.'; // add dot
         
         fpart = roundl(fpart * pow(10, afterpoint)) / pow(10, afterpoint);
         fpart = fpart * pow(10, afterpoint);
-        intToStr(fpart, res + i + 1, afterpoint); 
+        intToStr(fpart, res + i + 1, afterpoint, specs);
     }
 }
 
@@ -800,15 +790,13 @@ int main() {
     char str1[10000];
     char str2[10000];
 
-    char *format = "%lf %Lf";
-
-    double val4 = 9851.51351;
-    long double val5 = 95919539159.53151351131;
-    int res_int_1 = s21_sprintf(str1, format, val4, val5);
-    int res_int_2 = sprintf(str2, format, val4, val5);
+    char *format = "%.15Lf";
+    long double val = -15.35581134;
+    int res_int_1 = s21_sprintf(str1, format, val);
+    int res_int_2 = sprintf(str2, format, val);
 
     printf("%s|\n", str2);
     printf("%s|\n", str1);
-    
+
     printf("%d %d\n", res_int_2, res_int_1);
 }
