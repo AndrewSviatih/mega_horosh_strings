@@ -3,7 +3,7 @@
 START_TEST(classic){
     char src[10] = "123456789";
     char dest[10] = "12345";
-    size_t n = 5;
+    s21_size_t n = 5;
 
     ck_assert_int_eq(
         s21_strncmp(dest, src, n),
@@ -14,7 +14,7 @@ START_TEST(classic){
 START_TEST(hard){
     char src[] = "abcdsddas \n\n\t abcdaasdas . \0 .dsadasasd das d";
     char dest[] = "abcd";
-    size_t n = 4;
+    s21_size_t n = 4;
 
     ck_assert_int_eq(
         s21_strncmp(dest, src, n),
@@ -25,7 +25,7 @@ START_TEST(hard){
 START_TEST(empty) {
     char str1[] = "";
     char str2[] = "";
-    size_t n_byte = 0;
+    s21_size_t n_byte = 0;
 
     int got = s21_strncmp(str1, str2, n_byte);
     int expected = strncmp(str1, str2, n_byte);
@@ -42,7 +42,7 @@ START_TEST(empty) {
 START_TEST(floppa_) {
     char str1[] = "floppa";
     char str2[] = "";
-    size_t n_byte = 0;
+    s21_size_t n_byte = 0;
 
     int got = s21_strncmp(str1, str2, n_byte);
     int expected = strncmp(str1, str2, n_byte);
@@ -59,7 +59,7 @@ START_TEST(floppa_) {
 START_TEST(_floppa) {
     char str1[] = "";
     char str2[] = "floppa";
-    size_t n_byte = 0;
+    s21_size_t n_byte = 0;
 
     int got = s21_strncmp(str1, str2, n_byte);
     int expected = strncmp(str1, str2, n_byte);
@@ -76,7 +76,7 @@ START_TEST(_floppa) {
 START_TEST(floppa_floppa_zero_byte) {
     char str1[] = "floppabazbazkotya";
     char str2[] = "floppabaz";
-    size_t n_byte = 10;
+    s21_size_t n_byte = 10;
 
     int got = s21_strncmp(str1, str2, n_byte);
     int expected = strncmp(str1, str2, n_byte);
@@ -93,7 +93,7 @@ START_TEST(floppa_floppa_zero_byte) {
 START_TEST(floppa_floppa_one_byte) {
     char str1[] = "floppa";
     char str2[] = "floppa";
-    size_t n_byte = 1;
+    s21_size_t n_byte = 1;
 
     int got = s21_strncmp(str1, str2, n_byte);
     int expected = strncmp(str1, str2, n_byte);

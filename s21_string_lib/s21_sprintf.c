@@ -94,9 +94,9 @@ const char *set_specs(Spec *specs, const char *format, va_list *input) {
     return format;
 }
 
-size_t get_size_of_decimal(Spec *specs, long int num){
+s21_size_t get_size_of_decimal(Spec *specs, long int num){
 
-    size_t ress = 0;
+    s21_size_t ress = 0;
 
     long int copy_num = num;
 
@@ -111,8 +111,8 @@ size_t get_size_of_decimal(Spec *specs, long int num){
         ress++;
     }
 
-    if ((size_t)specs->width > ress) ress = specs->width;
-    if ((size_t)specs->accurency > ress) ress = specs->accurency;
+    if ((s21_size_t)specs->width > ress) ress = specs->width;
+    if ((s21_size_t)specs->accurency > ress) ress = specs->accurency;
 
     if (specs->space || specs->plus || num < 0) {
         specs->flag_to_size = 1;
@@ -157,7 +157,7 @@ char get_num_char(int num, int upper_case){
     return flag;
 }
 
-int decimal_to_string(Spec specs, char *str_to_num, long int num, size_t size_to_decimal){
+int decimal_to_string(Spec specs, char *str_to_num, long int num, s21_size_t s21_size_to_decimal){
 
     int flag = 0;
 
@@ -175,14 +175,14 @@ int decimal_to_string(Spec specs, char *str_to_num, long int num, size_t size_to
         char symb = '0';
         str_to_num[i] = symb;
         i++;
-        size_to_decimal--;
+        s21_size_to_decimal--;
     }
 
-    while (copy_num && str_to_num && size_to_decimal){
+    while (copy_num && str_to_num && s21_size_to_decimal){
         char sym = get_num_char(copy_num % specs.number_system, specs.upper_case);
         str_to_num[i] = sym;
         i++;
-        size_to_decimal--;
+        s21_size_to_decimal--;
         copy_num /= 10;
     }
 
@@ -195,40 +195,40 @@ int decimal_to_string(Spec specs, char *str_to_num, long int num, size_t size_to
         flag = 1;
     }
 
-    if (size_to_decimal == 1 && specs.zero == 1 && specs.flag_to_size == 1) 
+    if (s21_size_to_decimal == 1 && specs.zero == 1 && specs.flag_to_size == 1) 
         specs.zero = 0;
 // в функцию
-    while (specs.zero && str_to_num && (size_to_decimal - specs.flag_to_size > 0) && (specs.accurency || flag)) {
-        if ((size_to_decimal == 1 && specs.flag_to_size == 1))
+    while (specs.zero && str_to_num && (s21_size_to_decimal - specs.flag_to_size > 0) && (specs.accurency || flag)) {
+        if ((s21_size_to_decimal == 1 && specs.flag_to_size == 1))
             break;
 
         str_to_num[i] = '0';
-        size_to_decimal--;
+        s21_size_to_decimal--;
         specs.accurency--;
         i++;
     }
 // в функцию
-    if (specs.space && num >= 0 && size_to_decimal){
+    if (specs.space && num >= 0 && s21_size_to_decimal){
         str_to_num[i] = ' ';
         i++;
-        size_to_decimal--;
+        s21_size_to_decimal--;
     }
-    if (num < 0 && size_to_decimal) {
+    if (num < 0 && s21_size_to_decimal) {
         str_to_num[i] = '-';
         i++;
-        size_to_decimal--;
+        s21_size_to_decimal--;
     }
-    if (num > 0 && specs.plus && size_to_decimal) {
+    if (num > 0 && specs.plus && s21_size_to_decimal) {
         str_to_num[i] = '+';
         i++;
-        size_to_decimal--;
+        s21_size_to_decimal--;
     }
 
-    if (size_to_decimal > 0 && specs.minus == 0) {
-        while ((size_to_decimal - specs.flag_to_size > 0) && str_to_num) {
+    if (s21_size_to_decimal > 0 && specs.minus == 0) {
+        while ((s21_size_to_decimal - specs.flag_to_size > 0) && str_to_num) {
             str_to_num[i] = ' ';
             i++;
-            size_to_decimal--;
+            s21_size_to_decimal--;
         }
     }
 
@@ -247,12 +247,12 @@ char *print_decimal(char *res, Spec specs, va_list *input){
         num = (int) va_arg(*input, int);
     }
 
-    size_t size_to_decimal = get_size_of_decimal(&specs, num);
-    char *str_to_num = malloc(sizeof(char) * size_to_decimal);
+    s21_size_t s21_size_to_decimal = get_size_of_decimal(&specs, num);
+    char *str_to_num = malloc(sizeof(char) * s21_size_to_decimal);
 
     if (str_to_num) {
         // в обратную сторону пуляем
-        int i = decimal_to_string(specs, str_to_num, num, size_to_decimal);
+        int i = decimal_to_string(specs, str_to_num, num, s21_size_to_decimal);
         // делаем зеркальное пространство наоборот как во мстителях
         for (int j = i - 1; j >= 0; j--){
             *res = str_to_num[j];
@@ -282,9 +282,9 @@ Spec set_number_system(Spec specs, char format){
     return specs;
 }
 
-size_t get_buff_size_hex(Spec *specs, unsigned long int num){
+s21_size_t get_buff_size_hex(Spec *specs, unsigned long int num){
 
-    size_t res = 0;
+    s21_size_t res = 0;
 
     unsigned long int copy_num = num;
 
@@ -314,8 +314,8 @@ size_t get_buff_size_hex(Spec *specs, unsigned long int num){
         res++;
     }
 
-    if ((size_t)specs->width > res) res = specs->width;
-    if ((size_t)specs->accurency >= res) {
+    if ((s21_size_t)specs->width > res) res = specs->width;
+    if ((s21_size_t)specs->accurency >= res) {
         res = specs->accurency;
         if (specs->hash && specs->number_system == 16 && num) {
             res += 2;
@@ -332,7 +332,7 @@ size_t get_buff_size_hex(Spec *specs, unsigned long int num){
     return res;
 }
 
-int u_o_x_X_to_string(char *str_to_num, Spec *specs, unsigned long int num, size_t size_to_decimal) {
+int u_o_x_X_to_string(char *str_to_num, Spec *specs, unsigned long int num, s21_size_t s21_size_to_decimal) {
 
     int flag = 0;
     // int flag_u_spec = 0;
@@ -345,11 +345,11 @@ int u_o_x_X_to_string(char *str_to_num, Spec *specs, unsigned long int num, size
         specs->flag_to_size = 2;
     }
 // в функцию
-    while (copy_num && str_to_num && size_to_decimal) {
+    while (copy_num && str_to_num && s21_size_to_decimal) {
         char sym = get_num_char(copy_num % specs->number_system, specs->upper_case);
         str_to_num[i] = sym;
         i++;
-        size_to_decimal--;
+        s21_size_to_decimal--;
         copy_num /= specs->number_system;
     }
 
@@ -357,14 +357,14 @@ int u_o_x_X_to_string(char *str_to_num, Spec *specs, unsigned long int num, size
         if (specs->number_system == 16 && specs->accurency) {
             while ((specs->accurency > 1)) {
                 str_to_num[i] = '0';
-                size_to_decimal--;
+                s21_size_to_decimal--;
                 specs->accurency--;
                 i++;
             }
         }
         str_to_num[i] = '0';
         i++;
-        size_to_decimal--;
+        s21_size_to_decimal--;
     }
 
     if (flag) num = -num;
@@ -376,25 +376,25 @@ int u_o_x_X_to_string(char *str_to_num, Spec *specs, unsigned long int num, size
         flag = 1;
     }
 
-    if (size_to_decimal == 1 && specs->zero == 1 && specs->flag_to_size == 1)
+    if (s21_size_to_decimal == 1 && specs->zero == 1 && specs->flag_to_size == 1)
         specs->zero = 0;
 // в функцию
 //     char *format = "%#-5->10x";
-    while (specs->zero && str_to_num && (size_to_decimal - specs->flag_to_size > 0) && (specs->accurency || flag)) {
-        if ((size_to_decimal == 1 && specs->flag_to_size == 1))
+    while (specs->zero && str_to_num && (s21_size_to_decimal - specs->flag_to_size > 0) && (specs->accurency || flag)) {
+        if ((s21_size_to_decimal == 1 && specs->flag_to_size == 1))
             break;
         
         str_to_num[i] = '0';
-        size_to_decimal--;
+        s21_size_to_decimal--;
         specs->accurency--;
         i++;
     }
 
-    while (!specs->minus && (size_to_decimal - specs->flag_to_size > 0) && ((specs->accurency || flag) || specs->accurency < specs->width)) {
-        if ((size_to_decimal == 1 && specs->flag_to_size == 1)) break;
+    while (!specs->minus && (s21_size_to_decimal - specs->flag_to_size > 0) && ((specs->accurency || flag) || specs->accurency < specs->width)) {
+        if ((s21_size_to_decimal == 1 && specs->flag_to_size == 1)) break;
         if (specs->hash && specs->width && specs->number_system == 16) break;
         str_to_num[i] = ' ';
-        size_to_decimal--;
+        s21_size_to_decimal--;
         specs->accurency--;
         i++;
     }
@@ -403,29 +403,29 @@ int u_o_x_X_to_string(char *str_to_num, Spec *specs, unsigned long int num, size
         if (specs->hash && specs->number_system == 8) {
             str_to_num[i] = '0';
             i++;
-            size_to_decimal--;
+            s21_size_to_decimal--;
         } else if (specs->hash && specs->number_system == 16) {
             if (specs->upper_case) {
                 str_to_num[i] = 'X';
                 i++;
                 str_to_num[i] = '0';
                 i++;
-                size_to_decimal -= 2;
+                s21_size_to_decimal -= 2;
             } else if (!specs->upper_case) {
                 str_to_num[i] = 'x';
                 i++;
                 str_to_num[i] = '0';
                 i++;
-                size_to_decimal -= 2;
+                s21_size_to_decimal -= 2;
             }
         }
     }
 
-    while (!specs->minus && specs->hash && specs->width && specs->number_system == 16 && (size_to_decimal > 0) && (specs->accurency || flag)) {
-        if ((size_to_decimal == 1 && specs->flag_to_size == 1))
+    while (!specs->minus && specs->hash && specs->width && specs->number_system == 16 && (s21_size_to_decimal > 0) && (specs->accurency || flag)) {
+        if ((s21_size_to_decimal == 1 && specs->flag_to_size == 1))
             break;
         str_to_num[i] = ' ';
-        size_to_decimal--;
+        s21_size_to_decimal--;
         specs->accurency--;
         i++;
     }
@@ -444,10 +444,10 @@ char *print_hex(char *res, Spec specs, va_list *input){
         num = (unsigned int)va_arg(*input, unsigned int);
     }
 
-    size_t size_to_num = get_buff_size_hex(&specs, num);
-    char *buffer = malloc(sizeof(char) * size_to_num);
+    s21_size_t s21_size_to_num = get_buff_size_hex(&specs, num);
+    char *buffer = malloc(sizeof(char) * s21_size_to_num);
 
-    int i = u_o_x_X_to_string(buffer, &specs, num, size_to_num);
+    int i = u_o_x_X_to_string(buffer, &specs, num, s21_size_to_num);
 
     if (buffer) {
         for (int j = i - 1; j >= 0; j--){
@@ -502,7 +502,7 @@ char *print_s(char *res, Spec specs, va_list *input){
     if (string_input) {
         int tmp_width = specs.width;
 
-        if ((size_t)specs.width < strlen(string_input)) {
+        if ((s21_size_t)specs.width < strlen(string_input)) {
             specs.width = strlen(string_input);
         }
 
@@ -557,10 +557,10 @@ char *print_p(char *res, Spec *specs, va_list *input) {
         specs->hash = 1;
         specs->upper_case = 0;
 
-        size_t size_to_num = get_buff_size_hex(specs, ptr_name);
-        char *buffer = malloc(sizeof(char) * size_to_num);
+        s21_size_t s21_size_to_num = get_buff_size_hex(specs, ptr_name);
+        char *buffer = malloc(sizeof(char) * s21_size_to_num);
 
-        int i = u_o_x_X_to_string(buffer, specs, ptr_name, size_to_num);
+        int i = u_o_x_X_to_string(buffer, specs, ptr_name, s21_size_to_num);
 
         if (buffer) {
             for (int j = i - 1; j >= 0; j--){
@@ -606,9 +606,9 @@ void reverse(char* str, int len)
     } 
 } 
 
-int intToStr(size_t x, char str[], size_t d, Spec *specs)
+int intToStr(s21_size_t x, char str[], s21_size_t d, Spec *specs)
 { 
-    size_t i = 0;
+    s21_size_t i = 0;
     if (x == 0) {
         str[i++] = '0';
     } else {
@@ -637,7 +637,7 @@ int intToStr(size_t x, char str[], size_t d, Spec *specs)
 // Converts a floating-point/double number to a string-> 
 void ftoa(long double  n, char* res, int afterpoint, Spec *specs) 
 {
-    size_t ipart;
+    s21_size_t ipart;
     long double fpart;
     if (n < 0) {
         n = -n;
@@ -646,11 +646,11 @@ void ftoa(long double  n, char* res, int afterpoint, Spec *specs)
     if (specs->accurency == 0 && specs->dot) {
         ipart = roundl(n);
     } else {
-        ipart = (size_t)n;
+        ipart = (s21_size_t)n;
         fpart = n - (long double)ipart; 
     }
 
-    size_t i = intToStr(ipart, res, 0, specs);
+    s21_size_t i = intToStr(ipart, res, 0, specs);
 
     if (afterpoint != 0 || !specs->dot) {
         res[i] = '.'; // add dot
@@ -684,17 +684,17 @@ char *print_float(char *res, Spec *specs, va_list *input) {
     
     char *buffer = malloc(sizeof(char) * 1056);
     ftoa(num, buffer, specs->accurency, specs);
-    size_t buffer_lenght = strlen(buffer);
+    s21_size_t buffer_lenght = strlen(buffer);
 
     if (!specs->minus && specs->width) {
         if (specs->zero) {
-            while ((size_t)specs->width > buffer_lenght + specs->plus) {
+            while ((s21_size_t)specs->width > buffer_lenght + specs->plus) {
                 *res = '0';
                 res++;
                 specs->width--;
             }
         } else {
-            while ((size_t)specs->width > buffer_lenght + specs->plus) {
+            while ((s21_size_t)specs->width > buffer_lenght + specs->plus) {
                 *res = ' ';
                 res++;
                 specs->width--;
@@ -750,6 +750,79 @@ char *print_float(char *res, Spec *specs, va_list *input) {
     free(buffer);
     return res;
 }
+// 2 15
+int normalize(long double *num, Spec *specs) {
+    int i = 0;
+
+    if (fabsl(*num) > 1) {
+        while (fabsl(*num) > 10) {
+            *num /= 10;
+            i++;
+
+            specs->e = 2;
+        }
+    } else {
+        while (fabsl(*num) < 0.999999) {
+            if (*num == 0) {
+                specs->e = 2;
+                break;
+            }
+            *num *= 10;
+            i++;
+            specs->e = 1;
+        }
+    }
+    return i;
+} 
+// сокращение числа 1234567.0 = 1.2345.67e+02
+// 123456.0 = 12345.0
+Spec cutter(Spec specs, long double num) {
+    Spec buffer_specs = specs;
+    long double copy_num = num;
+
+    int e = normalize(&copy_num, &buffer_specs);
+
+    if (buffer_specs.accurency == 0 && !buffer_specs.dot) buffer_specs.accurency = 6;
+
+    if ((e <= 4 && buffer_specs.e == 1) || (buffer_specs.e == 2 && e < 6))
+        buffer_specs.e = 0;
+    
+    return buffer_specs;
+}
+
+char *print_e_g(char *res, Spec specs, va_list *input) {
+
+    long double num = 0;
+    s21_size_t size = 0;
+    int e;
+
+    if (specs.length == 'L') {
+        num = va_arg(*input, long double);
+    } else {
+        num = va_arg(*input, double);
+    }
+
+    if (specs.g) specs = cutter(specs, num);
+
+    if (specs.e) {
+        e = normalize(&num, &specs);
+        if (e < 100)
+            size += 2;
+        else
+            size += 3;
+    }
+    // printf ("%d %zu %Le\n", e, size, num);
+
+    char *buffer = malloc(sizeof(char) * 1056);
+    ftoa(num, buffer, specs.accurency, &specs);
+
+    for (int i = 0; buffer[i] != '\0'; i++) {
+        *res = buffer[i];
+        res++;
+    }
+
+    return res;
+}
 
 char *parser(char *res, const char *format, Spec specs, va_list *input, char *first_char){
 
@@ -773,6 +846,9 @@ char *parser(char *res, const char *format, Spec specs, va_list *input, char *fi
     } else if (*format == 'f' || *format == 'F') {
         specs = set_specs_float(specs, *format);
         res = print_float(res, &specs, input);
+    } else if (*format == 'e' || *format == 'E' || *format == 'g' || *format == 'G') {
+        specs = set_specs_float(specs, *format);
+        res = print_e_g(res, specs, input);
     }
     return res;
 }
@@ -828,11 +904,11 @@ int s21_sprintf(char *res, const char *format, ...){
 //     char str1[1000];
 //     char str2[1000];
 
-//     char format[] = "%+3.5lf";
+//     char format[] = "%g";
 //     // double val = 9851.51351;
 
-//     int res_int_1 = s21_sprintf(str1, format, 120);
-//     int res_int_2 = sprintf(str2, format, 120);
+//     int res_int_1 = s21_sprintf(str1, format, 123232);
+//     int res_int_2 = sprintf(str2, format, 123232);
 
 //     printf("%s|\n", str2);
 //     printf("%s|\n", str1);

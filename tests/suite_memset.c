@@ -15,7 +15,7 @@ START_TEST(aboba_test) {
     char res[] = "aboba";
     char expected[] = "aboba";
     char replace = 'g';
-    size_t n_byte = 5;
+    s21_size_t n_byte = 5;
 
     s21_memset(res, replace, n_byte);
     memset(expected, replace, n_byte);
@@ -28,7 +28,7 @@ START_TEST(zero_byte) {
     char res[] = "aboba";
     char expected[] = "aboba";
     char replace = 'g';
-    size_t n_byte = 0;
+    s21_size_t n_byte = 0;
 
     s21_memset(res, replace, n_byte);
     memset(expected, replace, n_byte);
@@ -40,7 +40,7 @@ START_TEST(empty) {
     char res[] = "";
     char expected[] = "";
     char replace = '\0';
-    size_t n_byte = 0;
+    s21_size_t n_byte = 0;
 
     s21_memset(res, replace, n_byte);
     memset(expected, replace, n_byte);
@@ -53,7 +53,7 @@ START_TEST(replace_on_register_sim) {
     char res[] = "aboba";
     char expected[] = "aboba";
     char replace = 'A';
-    size_t n_byte = 3;
+    s21_size_t n_byte = 3;
 
     s21_memset(res, replace, n_byte);
     memset(expected, replace, n_byte);
@@ -66,7 +66,7 @@ START_TEST(replace_on_register_num) {
     char res[] = "a1obA";
     char expected[] = "a1obA";
     char replace = '1';
-    size_t n_byte = 5;
+    s21_size_t n_byte = 5;
 
     s21_memset(res, replace, n_byte);
     memset(expected, replace, n_byte);
@@ -79,7 +79,7 @@ START_TEST(long_string) {
     char res[] = "a1oas[pifjaosidfj oapisjdfpoi asjdfoij ouh12oi3 uh12i3 hiajhIOUAHSDiouAHSdu1).bA";
     char expected[] = "a1oas[pifjaosidfj oapisjdfpoi asjdfoij ouh12oi3 uh12i3 hiajhIOUAHSDiouAHSdu1).bA";
     char replace = '1';
-    size_t n_byte = 5;
+    s21_size_t n_byte = 5;
 
     s21_memset(res, replace, n_byte);
     memset(expected, replace, n_byte);

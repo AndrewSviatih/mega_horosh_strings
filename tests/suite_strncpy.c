@@ -4,7 +4,7 @@ START_TEST(classic){
 
     char src[10] = "12345";
     char dest[10] = "6789";
-    size_t n = 5;
+    s21_size_t n = 5;
 
     ck_assert_str_eq(
         s21_strncpy(dest, src, n),
@@ -17,7 +17,7 @@ START_TEST(empty) {
     char src[] = "";
     char res[] = "";
     char exp[] = "";
-    size_t n_byte = 0;
+    s21_size_t n_byte = 0;
 
     s21_strncpy(res, src, n_byte);
     strncpy(exp, src, n_byte);
@@ -29,7 +29,7 @@ START_TEST(zero_byte) {
     char src[] = "123";
     char res[] = "123";
     char exp[] = "123";
-    size_t n_byte = 0;
+    s21_size_t n_byte = 0;
 
     s21_strncpy(res, src, n_byte);
     strncpy(exp, src, n_byte);
@@ -41,7 +41,7 @@ START_TEST(empty_src) {
     char src[] = "";
     char res[] = "123";
     char exp[] = "123";
-    size_t n_byte = 0;
+    s21_size_t n_byte = 0;
 
     s21_strncpy(res, src, n_byte);
     strncpy(exp, src, n_byte);
@@ -53,7 +53,7 @@ START_TEST(one_byte) {
     char src[] = "123";
     char res[5] = "123";
     char exp[5] = "123";
-    size_t n_byte = 1;
+    s21_size_t n_byte = 1;
 
     s21_strncpy(res, src, n_byte);
     strncpy(exp, src, n_byte);
@@ -65,7 +65,7 @@ START_TEST(two_byte) {
     char src[] = "123";
     char res[7] = "123";
     char exp[7] = "123";
-    size_t n_byte = 2;
+    s21_size_t n_byte = 2;
 
     s21_strncpy(res, src, n_byte);
     strncpy(exp, src, n_byte);
@@ -77,7 +77,7 @@ START_TEST(string) {
     char src[] = "Str1ng";
     char res[7 + 7] = "Str1ng";
     char exp[7 + 7] = "Str1ng";
-    size_t n_byte = 7;
+    s21_size_t n_byte = 7;
 
     s21_strncpy(res, src, n_byte);
     strncpy(exp, src, n_byte);

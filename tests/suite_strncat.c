@@ -16,7 +16,7 @@ START_TEST(all_empty) {
     char src[] = "";
     char res[] = "";
     char expected[] = "";
-    size_t n_byte = 0;
+    s21_size_t n_byte = 0;
 
     s21_strncat(res, src, n_byte);
     strncat(expected, src, n_byte);
@@ -28,7 +28,7 @@ START_TEST(zero_byte) {
     char src[] = "abosal";
     char res[10] = "";
     char expected[10] = "";
-    size_t n_byte = 0;
+    s21_size_t n_byte = 0;
 
     s21_strncat(res, src, n_byte);
     strncat(expected, src, n_byte);
@@ -40,7 +40,7 @@ START_TEST(empty_src) {
     char src[] = "";
     char res[10] = "cd";
     char expected[10] = "cd";
-    size_t n_byte = 0;
+    s21_size_t n_byte = 0;
 
     s21_strncat(res, src, n_byte);
     strncat(expected, src, n_byte);
@@ -53,7 +53,7 @@ START_TEST(cd_abosa) {
     char src[] = "abosal";
     char res[10] = "cd";
     char expected[10] = "cd";
-    size_t n_byte = 5;
+    s21_size_t n_byte = 5;
 
     s21_strncat(res, src, n_byte);
     strncat(expected, src, n_byte);
@@ -65,7 +65,7 @@ START_TEST(string) {
     char src[] = "abosal";
     char res[25] = "koleka";
     char expected[25] = "koleka";
-    size_t n_byte = 6;
+    s21_size_t n_byte = 6;
 
     s21_strncat(res, src, n_byte);
     strncat(expected, src, n_byte);
@@ -77,7 +77,7 @@ START_TEST(BIGFLOPPA) {
     char src[] = "BIGFLOPPA";
     char res[25] = "BIGFLOPPA";
     char expected[25] = "BIGFLOPPA";
-    size_t n_byte = 5;
+    s21_size_t n_byte = 5;
 
     s21_strncat(res, src, n_byte);
     strncat(expected, src, n_byte);
@@ -89,7 +89,7 @@ START_TEST(BIGFLOPPA2) {
     char src[] = "BIGFLOPPA";
     char res[25] = "BIGFLOPPA";
     char expected[25] = "BIGFLOPPA";
-    size_t n_byte = 0;
+    s21_size_t n_byte = 0;
 
     s21_strncat(res, src, n_byte);
     strncat(expected, src, n_byte);
@@ -101,7 +101,7 @@ START_TEST(BIGFLOPPA3) {
     char src[] = "BIGFLOPPA";
     char res[25] = "BIGFLOPPA";
     char expected[25] = "BIGFLOPPA";
-    size_t n_byte = 1;
+    s21_size_t n_byte = 1;
 
     s21_strncat(res, src, n_byte);
     strncat(expected, src, n_byte);
@@ -113,7 +113,7 @@ START_TEST(BIGFLOPPA4) {
     char src[] = "BIGFLOPPA";
     char res[25] = "BIGFLOPPA";
     char expected[25] = "BIGFLOPPA";
-    size_t n_byte = 10;
+    s21_size_t n_byte = 10;
 
     s21_strncat(res, src, n_byte);
     strncat(expected, src, n_byte);
@@ -125,7 +125,7 @@ START_TEST(zero_char) {
     char src[] = "\0";
     char res[25] = "BIGFLOPPA";
     char expected[25] = "BIGFLOPPA";
-    size_t n_byte = 1;
+    s21_size_t n_byte = 1;
 
     s21_strncat(res, src, n_byte);
     strncat(expected, src, n_byte);
