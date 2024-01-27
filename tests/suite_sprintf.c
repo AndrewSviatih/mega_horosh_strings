@@ -752,12 +752,12 @@ START_TEST(ptr_precision) {
     ck_assert_str_eq(str1, str2);
 }
 END_TEST
-START_TEST(null_ptr) {
+START_TEST(S21_NULL_ptr) {
     char str1[BUFF_SIZE];
     char str2[BUFF_SIZE];
 
     char *format = "%p";
-    char *ptr = NULL;
+    char *ptr = S21_NULL;
     ck_assert_int_eq(s21_sprintf(str1, format, ptr),
                      sprintf(str2, format, ptr));
 
@@ -2462,7 +2462,7 @@ Suite *suite_sprintf(void) {
     tcase_add_test(tc, ptr);
     tcase_add_test(tc, ptr_width);
     tcase_add_test(tc, ptr_precision);
-    tcase_add_test(tc, null_ptr);
+    tcase_add_test(tc, S21_NULL_ptr);
     tcase_add_test(tc, n_specifier);
     tcase_add_test(tc, string_width_huge);
     tcase_add_test(tc, test_sprintf_minus_space_dot_zero);

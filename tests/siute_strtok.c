@@ -13,8 +13,8 @@ START_TEST(correct_token_string) {
 
 
     while (got && expected) {
-        got = s21_strtok(NULL, delims);
-        expected = strtok(NULL, delims);
+        got = s21_strtok(S21_NULL, delims);
+        expected = strtok(S21_NULL, delims);
 
         if (got || expected) {
             ck_assert_str_eq(got, expected);
@@ -38,8 +38,8 @@ START_TEST(hard_token_string) {
     ck_assert_str_eq(got, expected);
 
     while (got && expected) {
-        got = s21_strtok(NULL, delims);
-        expected = strtok(NULL, delims);
+        got = s21_strtok(S21_NULL, delims);
+        expected = strtok(S21_NULL, delims);
 
         if (got || expected) {
             ck_assert_uint_eq(s21_strlen(got), s21_strlen(expected));
@@ -63,8 +63,8 @@ START_TEST(unary_delimiters) {
     ck_assert_str_eq(got, expected);
 
     while (got && expected) {
-        got = s21_strtok(NULL, delims);
-        expected = strtok(NULL, delims);
+        got = s21_strtok(S21_NULL, delims);
+        expected = strtok(S21_NULL, delims);
 
         if (got || expected) {
             ck_assert_str_eq(got, expected);
@@ -88,8 +88,8 @@ START_TEST(no_delims) {
     ck_assert_str_eq(got, expected);
 
     while (got && expected) {
-        got = s21_strtok(NULL, delims);
-        expected = strtok(NULL, delims);
+        got = s21_strtok(S21_NULL, delims);
+        expected = strtok(S21_NULL, delims);
 
         if (got || expected) {
             ck_assert_str_eq(got, expected);
@@ -125,8 +125,8 @@ START_TEST(too_many_uses_non_segfault) {
 
     int i = 5;
     while (i) {
-        got = s21_strtok(NULL, delims);
-        expected = strtok(NULL, delims);
+        got = s21_strtok(S21_NULL, delims);
+        expected = strtok(S21_NULL, delims);
         i--;
 
         if (got || expected) {
@@ -151,8 +151,8 @@ START_TEST(even_n_of_delims) {
     ck_assert_str_eq(got, expected);
 
     while (got && expected) {
-        got = s21_strtok(NULL, delims);
-        expected = strtok(NULL, delims);
+        got = s21_strtok(S21_NULL, delims);
+        expected = strtok(S21_NULL, delims);
 
         if (got || expected) {
             ck_assert_str_eq(got, expected);
@@ -176,8 +176,8 @@ START_TEST(odd_n_of_delims) {
     ck_assert_str_eq(got, expected);
 
     while (got && expected) {
-        got = s21_strtok(NULL, delims);
-        expected = strtok(NULL, delims);
+        got = s21_strtok(S21_NULL, delims);
+        expected = strtok(S21_NULL, delims);
 
         if (got || expected) {
             ck_assert_str_eq(got, expected);
@@ -200,8 +200,8 @@ START_TEST(mixed_n_of_delims) {
     ck_assert_str_eq(got, expected);
 
     while (got && expected) {
-        got = s21_strtok(NULL, delims);
-        expected = strtok(NULL, delims);
+        got = s21_strtok(S21_NULL, delims);
+        expected = strtok(S21_NULL, delims);
 
         if (got || expected) {
             ck_assert_str_eq(got, expected);
@@ -225,8 +225,8 @@ START_TEST(hard_mixed) {
     ck_assert_str_eq(got, expected);
 
     while (got || expected) {
-        got = s21_strtok(NULL, delims);
-        expected = strtok(NULL, delims);
+        got = s21_strtok(S21_NULL, delims);
+        expected = strtok(S21_NULL, delims);
 
         if (got || expected) {
             ck_assert_str_eq(got, expected);
@@ -250,8 +250,8 @@ START_TEST(mixed_hard_incorrect) {
     ck_assert_str_eq(got, expected);
 
     while (got || expected) {
-        got = s21_strtok(NULL, delims);
-        expected = strtok(NULL, delims);
+        got = s21_strtok(S21_NULL, delims);
+        expected = strtok(S21_NULL, delims);
 
         if (got || expected) {
             ck_assert_str_eq(got, expected);
@@ -275,8 +275,8 @@ START_TEST(very_hard_mixed) {
     ck_assert_str_eq(got, expected);
 
     while (got || expected) {
-        got = s21_strtok(NULL, delims);
-        expected = strtok(NULL, delims);
+        got = s21_strtok(S21_NULL, delims);
+        expected = strtok(S21_NULL, delims);
 
         if (got || expected) {
             ck_assert_str_eq(got, expected);

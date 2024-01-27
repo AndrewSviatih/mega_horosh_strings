@@ -470,7 +470,7 @@ char *print_hex(char *res, Spec specs, va_list *input){
 
 char *print_c(char *res, Spec specs, char symb) {
 
-    char *ptr = NULL;
+    char *ptr = S21_NULL;
 
     while (!specs.minus && specs.width - 1 > 0) {
         *res = ' ';
@@ -538,7 +538,7 @@ char *print_s(char *res, Spec specs, va_list *input){
             }
         }
     } else {
-        res = memcpy(res, "(null)", 6);
+        res = memcpy(res, "(S21_NULL)", 6);
         res += 6;
     }
 

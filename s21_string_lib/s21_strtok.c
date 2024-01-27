@@ -1,12 +1,12 @@
 #include "s21_string.h"
 
 char *s21_strtok(char *str, const char *delim) {
-    static char *token = NULL;
+    static char *token = S21_NULL;
 
-    if (str != NULL) {
+    if (str != S21_NULL) {
         token = str;
-    } else if (token == NULL || *token == '\0') {
-        return NULL;
+    } else if (token == S21_NULL || *token == '\0') {
+        return S21_NULL;
     }
 
     while (*token != '\0' && s21_strchr(delim, *token)) {
@@ -14,8 +14,8 @@ char *s21_strtok(char *str, const char *delim) {
     }
 
     if (*token == '\0') {
-        token = NULL;
-        return NULL;
+        token = S21_NULL;
+        return S21_NULL;
     }
 
     char *start_ptr = token;

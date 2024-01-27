@@ -27,9 +27,9 @@ void run_tests(void) {
             suite_strncat(), suite_strchr(), suite_strncmp(), suite_strncpy(), 
             suite_strcspn(), suite_atoi(), suite_strlen(), suite_strerror(), 
             suite_strcpy(), suite_strpbrk(), suite_strstr(), suite_strtok(), 
-            suite_sprintf(), NULL};
+            suite_sprintf(), S21_NULL};
 
-    for (Suite **current_testcase = list_cases; *current_testcase != NULL;
+    for (Suite **current_testcase = list_cases; *current_testcase != S21_NULL;
         current_testcase++) {
         run_testcase(*current_testcase, counter_testcase);
         counter_testcase++;
