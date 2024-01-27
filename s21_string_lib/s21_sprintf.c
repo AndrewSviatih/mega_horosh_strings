@@ -1,5 +1,5 @@
-#include "../s21_string_lib/s21_string.h"
-#include "string.h"
+#include "s21_string.h"
+// #include "string.h"
 
 typedef struct {
     int minus;
@@ -120,8 +120,6 @@ s21_size_t get_size_of_decimal(Spec *specs, long int num){
     }
     if (ress == 0 && copy_num == 0 && !specs->accurency && !specs->width && !specs->space && !specs->dot) 
         ress++;
-
-    // printf("%zu\n", ress);
 
     return ress;
 }
@@ -502,11 +500,11 @@ char *print_s(char *res, Spec specs, va_list *input){
     if (string_input) {
         int tmp_width = specs.width;
 
-        if ((s21_size_t)specs.width < strlen(string_input)) {
-            specs.width = strlen(string_input);
+        if ((s21_size_t)specs.width < s21_strlen(string_input)) {
+            specs.width = s21_strlen(string_input);
         }
 
-        int needed_spaces = specs.width - strlen(string_input);
+        int needed_spaces = specs.width - s21_strlen(string_input);
 
         if (specs.accurency == 0) specs.accurency = specs.width;
 
@@ -538,7 +536,7 @@ char *print_s(char *res, Spec specs, va_list *input){
             }
         }
     } else {
-        res = memcpy(res, "(S21_NULL)", 6);
+        res = s21_memcpy(res, "(S21_NULL)", 6);
         res += 6;
     }
 
@@ -550,7 +548,7 @@ char *print_p(char *res, Spec *specs, va_list *input) {
     unsigned long int ptr_name = (unsigned long int)va_arg(*input, unsigned long int);
 
     if (ptr_name == 0) {
-        res = memcpy(res, "(nil)", 5);
+        res = s21_memcpy(res, "(nil)", 5);
         res += 5;
     } else {
         specs->number_system = 16;
@@ -684,7 +682,7 @@ char *print_float(char *res, Spec *specs, va_list *input) {
     
     char *buffer = malloc(sizeof(char) * 1056);
     ftoa(num, buffer, specs->accurency, specs);
-    s21_size_t buffer_lenght = strlen(buffer);
+    s21_size_t buffer_lenght = s21_strlen(buffer);
 
     if (!specs->minus && specs->width) {
         if (specs->zero) {
@@ -723,7 +721,7 @@ char *print_float(char *res, Spec *specs, va_list *input) {
         res++;
     }
 
-    if (strcmp(buffer, "0.0") == 0 && specs->accurency > 1) {
+    if (s21_strcmp(buffer, "0.0") == 0 && specs->accurency > 1) {
         while (specs->accurency > 1){
             *res = '0';
             res++;
@@ -867,7 +865,7 @@ int s21_sprintf(char *res, const char *format, ...){
             Spec specs = {0};
             specs.number_system = 10;
             format = set_specs(&specs, format, &input);
-            while (!strchr(specifiers, *format)) format++;
+            while (!s21_strchr(specifiers, *format)) format++;
             res = parser(res, format, specs, &input, first_char);
             *res = '\0';
         } else {
