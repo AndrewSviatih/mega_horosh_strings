@@ -15,6 +15,7 @@
 # Precompiled Headers
 *.gch
 *.pch
+s21_string
 
 # Libraries
 *.lib
