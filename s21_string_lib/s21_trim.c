@@ -1,6 +1,6 @@
 #include "s21_string.h"
 
-void *trim(const char *src, const char *trim_chars) {
+void *s21_trim(const char *src, const char *trim_chars) {
   char *result;
 
   if (src == S21_NULL) {

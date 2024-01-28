@@ -24,7 +24,13 @@ Suite *suite_strcpy(void);
 Suite *suite_strpbrk(void);
 Suite *suite_strstr(void);
 Suite *suite_strtok(void);
+
 Suite *suite_sprintf(void);
+
+Suite *suite_to_lower(void);
+Suite *suite_to_upper(void);
+Suite *suite_trim(void);
+Suite *suite_insert(void);
 
 void run_tests(void);
 void run_testcase(Suite *testcase, int counter_testcase);

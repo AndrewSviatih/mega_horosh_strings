@@ -1,3 +1,0 @@
-/Users/sviatie/Downloads/school21/mega_horosh_strings/mega_horosh_strings/cmake-build-debug/CMakeFiles/s.dir
-/Users/sviatie/Downloads/school21/mega_horosh_strings/mega_horosh_strings/cmake-build-debug/CMakeFiles/edit_cache.dir
-/Users/sviatie/Downloads/school21/mega_horosh_strings/mega_horosh_strings/cmake-build-debug/CMakeFiles/rebuild_cache.dir
