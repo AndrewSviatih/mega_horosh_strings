@@ -16,6 +16,7 @@
 *.gch
 *.pch
 s21_string
+.vscode/
 
 # Libraries
 *.lib
