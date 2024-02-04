@@ -1,11 +1,12 @@
 #include "s21_string.h"
 
 void *s21_trim(const char *src, const char *trim_chars) {
-  char *result;
-
+  char *result = S21_NULL;
+  if (trim_chars == S21_NULL || trim_chars[0] == '\0') {
+    trim_chars = " \t\n\r\f\v";
+  }
   if (src == S21_NULL) {
     result = S21_NULL;
-    printf("trim: src is null\n");
   } else {
     s21_size_t start_index = 0;
     s21_size_t end_index = s21_strlen(src) - 1;

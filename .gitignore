@@ -23,6 +23,7 @@ s21_string
 *.a
 *.la
 *.lo
+.clang-format
 
 # Shared objects (inc. Windows DLLs)
 *.dll
