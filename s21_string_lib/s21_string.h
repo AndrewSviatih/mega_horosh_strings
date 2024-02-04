@@ -1,16 +1,12 @@
-//
-// Created by anrdew sviatie on 05.01.2024.
-//
-
 #ifndef STRING_S21_STRING_H
 #define STRING_S21_STRING_H
 
-#include "stdio.h"
-#include "stdlib.h"
-// #include "string.h"
+#include <math.h>
+
 #include "stdarg.h"
 #include "stdint.h"
-#include <math.h>
+#include "stdio.h"
+#include "stdlib.h"
 
 #define S21_INT32_MAX 2147483647
 #define S21_INT32_MIN -2147483648
@@ -45,4 +41,4 @@ void *s21_insert(const char *src, const char *str, s21_size_t start_index);
 
 int s21_sprintf(char *str, const char *format, ...);
 
-#endif //STRING_S21_STRING_H
+#endif  // STRING_S21_STRING_H

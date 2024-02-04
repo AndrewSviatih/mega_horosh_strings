@@ -29,6 +29,7 @@ s21_string
 *.so
 *.so.*
 *.dylib
+.clang-format
 
 # Executables
 *.exe
