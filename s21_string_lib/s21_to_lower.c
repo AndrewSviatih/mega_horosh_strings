@@ -1,12 +1,10 @@
 #include "../tests/s21_tests.h"
 #include "s21_string.h"
 
-void *s21_to_lower(const char *str)
-{
+void *s21_to_lower(const char *str) {
   char *result;
 
-  if (str == S21_NULL)
-  {
+  if (str == S21_NULL) {
     result = S21_NULL;
   } else {
     result = calloc(s21_strlen(str) + 1, sizeof(char));
@@ -16,17 +14,14 @@ void *s21_to_lower(const char *str)
         result[i] = str[i] - 'A' + 'a';
       } else if (str[i] >= 0 && str[i] < 127) {
         result[i] = str[i];
-      }
-      else
-      {
+      } else {
         flag = 0;
         free(result);
         result = S21_NULL;
       }
     }
   }
-  if (result != S21_NULL)
-  {
+  if (result != S21_NULL) {
     result[s21_strlen(str)] = '\0';
   }
 
