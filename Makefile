@@ -23,42 +23,42 @@ all: s21_string
 s21_string: lib tests main final
 
 lib: $(OBJS_STR_LIB)
-	ar rcs $(MY_LIB) $(OBJS_STR_LIB_DONE)
+		ar rcs $(MY_LIB) $(OBJS_STR_LIB_DONE)
 
 tests: $(OBJS_TESTS)
 
 main:
-	$(CC) -c $(MAIN) -o build/main.o
+		$(CC) -c $(MAIN) -o build/main.o
 
 final:
-	$(CC) $(CFLAGS) $(C11) build/main.o $(OBJS_TESTS_DONE) -o s21_string -L. $(MY_LIB) $(CHECK_LIBS)
+		$(CC) $(CFLAGS) $(C11) build/main.o $(OBJS_TESTS_DONE) -o s21_string -L. $(MY_LIB) $(CHECK_LIBS)
 
 gcov_report:
-	$(CC) --coverage $(CFLAGS) $(CFILES_STR_LIB) $(CFILES_TESTS) main.c -o test -lcheck -lsubunit -lm
-	./test
-	lcov -t "test" -o test.info -c -d ./
-	genhtml -o report test.info
+		$(CC) --coverage $(CFLAGS) $(CFILES_STR_LIB) $(CFILES_TESTS) main.c -o test -lcheck -lsubunit -lm
+		./test
+		lcov -t "test" -o test.info -c -d ./
+		genhtml -o report test.info
 
 cppcheck:
-	$(CPP) $(CFILES)
+		$(CPP) $(CFILES)
 
 clang_check:
-	find -name "*.c" -o -name "*.h" | xargs clang-format -n
+		find -name "*.c" -o -name "*.h" | xargs clang-format -n
 
 clean:
-	rm -f s21_string $(OBJS_STR_LIB_DONE) $(OBJS_TESTS_DONE) build/main.o $(MY_LIB)
-	rm -rf *.gcda
-	rm -rf *.gcno
-	rm -rf *.info
-	rm -rf test
+		rm -f s21_string $(OBJS_STR_LIB_DONE) $(OBJS_TESTS_DONE) build/main.o $(MY_LIB)
+		rm -rf *.gcda
+		rm -rf *.gcno
+		rm -rf *.info
+		rm -rf test
 
 rebuild: clean s21_string
 
 $(OBJS_STR_LIB): %.o: %.c
-	$(CC) $(CFLAGS) $(C11) -c $< -o build/$@
+		$(CC) $(CFLAGS) $(C11) -c $< -o build/$@
 
 $(OBJS_TESTS): %.o: %.c
-	$(CC) $(CFLAGS) $(C11) -c $< -o build/$@
+		$(CC) $(CFLAGS) $(C11) -c $< -o build/$@
 
 sprintf:
-	gcc -Wall -Werror -Wextra s21_string_lib/s21_sprintf.c -o ../a -L. $(MY_LIB) $(CHECK_LIBS)
+		gcc -Wall -Werror -Wextra s21_string_lib/s21_sprintf.c -o ../a -L. $(MY_LIB) $(CHECK_LIBS)

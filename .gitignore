@@ -16,18 +16,21 @@
 *.gch
 *.pch
 s21_string
+.vscode/
 
 # Libraries
 *.lib
 *.a
 *.la
 *.lo
+.clang-format
 
 # Shared objects (inc. Windows DLLs)
 *.dll
 *.so
 *.so.*
 *.dylib
+.clang-format
 
 # Executables
 *.exe
