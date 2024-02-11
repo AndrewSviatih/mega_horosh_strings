@@ -20,10 +20,8 @@ void *s21_to_upper(const char *str) {
       }
     }
   }
-
-  if (result != S21_NULL) {
-    result[s21_strlen(str)] = '\0';
-  }
-
+  
+  if (result != S21_NULL) result[s21_strlen(str)] = '\0';
+  
   return result;
 }
