@@ -37,9 +37,9 @@ START_TEST(insert_test3) {
   char str[] = "";
   char src[] = "";
   s21_size_t index = 100;
-  char *expected = "";
+  char *expected = NULL;
   char *got = (char *)s21_insert(src, str, index);
-  ck_assert_str_eq(got, expected);
+  ck_assert_ptr_eq(got, expected);
   if (got) free(got);
 }
 END_TEST

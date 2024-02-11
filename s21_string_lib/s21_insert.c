@@ -3,8 +3,11 @@
 void *s21_insert(const char *src, const char *str, s21_size_t start_index) {
   char *result;
 
-  if (!src || !str || (s21_strlen(src) < start_index)) {
+  if (!src || (s21_strlen(src) < start_index)) {
     result = S21_NULL;
+  } else if (!str) {
+    result = calloc(s21_strlen(src), sizeof(char));
+    result = s21_strcpy(result, src);
   } else {
     result = calloc(s21_strlen(src) + s21_strlen(str), sizeof(char));
     int flag = 1;
