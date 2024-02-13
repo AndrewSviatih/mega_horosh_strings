@@ -20,7 +20,7 @@ END_TEST
 
 START_TEST(to_lower_test_prekol) {
   char str[] = "12SsL;222sADSsda34\056789Q";
-  char expected[] = "12ssl;222sadssda34";
+  char expected[] = "12ssl;222sadssda34\056789q";
   char *got = s21_to_lower(str);
   ck_assert_str_eq(got, expected);
   if (got) free(got);
