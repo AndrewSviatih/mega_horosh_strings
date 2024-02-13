@@ -62,3 +62,6 @@ $(OBJS_TESTS): %.o: %.c
 
 sprintf:
 		gcc -Wall -Werror -Wextra s21_string_lib/s21_sprintf.c -o ../a -L. $(MY_LIB) $(CHECK_LIBS)
+
+valgrind: rebuild
+	valgrind --tool=memcheck --leak-check=yes ./s21_string
