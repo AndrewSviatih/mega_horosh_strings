@@ -13,7 +13,7 @@ void *s21_to_lower(const char *str) {
       if (str[i] >= 'A' && str[i] <= 'Z') {
         result[result_len] = str[i] - 'A' + 'a';
         result_len++;
-      } else if (str[i] >= 0 && str[i] < 127) {
+      } else if (str[i] < 127) {
         result[result_len] = str[i];
         result_len++;
       } else {

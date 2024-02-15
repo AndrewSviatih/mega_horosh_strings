@@ -11,7 +11,7 @@ void *s21_to_upper(const char *str) {
     for (s21_size_t i = 0; i < s21_strlen(str) && flag == 1; i++) {
       if (str[i] >= 'a' && str[i] <= 'z') {
         result[i] = str[i] - 'a' + 'A';
-      } else if (str[i] >= 0 && str[i] < 127) {
+      } else if (str[i] < 127) {
         result[i] = str[i];
       } else {
         flag = 0;
