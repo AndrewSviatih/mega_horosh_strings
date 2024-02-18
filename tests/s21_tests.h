@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#define BUFF_SIZE 1000
+
 #include "../s21_string_lib/s21_string.h"
 
 Suite *suite_memchr(void);
@@ -27,6 +29,7 @@ Suite *suite_strstr(void);
 Suite *suite_strtok(void);
 
 Suite *suite_sprintf(void);
+Suite *suite_sscanf(void);
 
 Suite *suite_to_lower(void);
 Suite *suite_to_upper(void);

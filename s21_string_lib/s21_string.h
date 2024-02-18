@@ -7,6 +7,7 @@
 #include "stdint.h"
 #include "stdio.h"
 #include "stdlib.h"
+#include "stdbool.h"
 
 #define S21_INT32_MAX 2147483647
 #define S21_INT32_MIN -2147483648
