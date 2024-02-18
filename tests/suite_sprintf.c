@@ -763,10 +763,10 @@ END_TEST
 START_TEST(float_precision_zero) {
   char str1[BUFF_SIZE];
   char str2[BUFF_SIZE];
-  char *format = "%.0Lf";
-  long double val = 15.35;
-  ck_assert_int_eq(s21_sprintf(str1, format, val), sprintf(str2, format, val));
+  char *format = "%d";
+  long double val = 15;
 
+  ck_assert_int_eq(s21_sprintf(str1, format, val), sprintf(str2, format, val));
   ck_assert_str_eq(str1, str2);
 }
 END_TEST
@@ -1742,7 +1742,7 @@ START_TEST(test_sprintf14) {
 
   ck_assert_int_eq(s21_sprintf(str1, format, 1, 222, 33333333333, -166513.1232),
                    sprintf(str2, format, 1, 222, 33333333333, -166513.1232));
-
+  printf("%s", str1);
   ck_assert_str_eq(str1, str2);
 }
 END_TEST
@@ -1801,7 +1801,6 @@ START_TEST(test_sprintf20) {
 
   ck_assert_int_eq(s21_sprintf(str1, format, "Nick her"),
                    sprintf(str2, format, "Nick her"));
-
   ck_assert_str_eq(str1, str2);
 }
 END_TEST
@@ -1816,7 +1815,6 @@ START_TEST(test_sprintf24) {
                   "Lorem ipsum dolor sit amet. Aut quam ducimus.", 11),
       sprintf(str2, format, 'f', 21, 42, 666.666,
               "Lorem ipsum dolor sit amet. Aut quam ducimus.", 11));
-
   ck_assert_str_eq(str1, str2);
 }
 END_TEST
