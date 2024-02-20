@@ -34,6 +34,7 @@ char *s21_strpbrk(const char *str1, const char *str2);
 char *s21_strstr(const char *haystack, const char *needle);
 char *s21_strtok(char *str, const char *delim);
 int s21_atoi(const char *str);
+void *s21_memmove(void *dest, const void *src, s21_size_t n);
 
 void *s21_to_lower(const char *str);
 void *s21_to_upper(const char *str);

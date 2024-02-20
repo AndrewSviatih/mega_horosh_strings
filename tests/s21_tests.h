@@ -27,6 +27,7 @@ Suite *suite_strcpy(void);
 Suite *suite_strpbrk(void);
 Suite *suite_strstr(void);
 Suite *suite_strtok(void);
+Suite *suite_memmove(void);
 
 Suite *suite_sprintf(void);
 Suite *suite_sscanf(void);
