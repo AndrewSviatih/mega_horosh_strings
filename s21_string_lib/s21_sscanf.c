@@ -1,15 +1,41 @@
 #include "s21_string.h"
 
+typedef struct {
+  int assignment;
+  int width;
+  int length;
+} specs;
+
+void init_specs(specs* format_modifiers);
+bool process_scan(const char* format, int* i, char** str, const int read,
+                  int* counter, va_list* params,
+                  specs* format_modifiers);
+bool set_c(char** str, int* counter, va_list* params,
+           specs* format_modifiers, bool before_percent);
+bool set_di(const char specifier, char** str, int* counter, va_list* params,
+            specs* format_modifiers);
+bool set_feg(char** str, int* counter, va_list* params,
+             specs* format_modifiers);
+bool set_uox(const char specifier, char** str, int* counter, va_list* params,
+             specs* format_modifiers);
+bool set_s(char** str, int* counter, va_list* params,
+           specs* format_modifiers);
+bool set_p(char** str, int* counter, va_list* params,
+           specs* format_modifiers);
+void set_n(char** str, va_list* params, const int read,
+           const bool before_percent);
+bool is_blank(char* str);
+
 int s21_sscanf(const char* str, const char* format, ...) {
   va_list params;
   va_start(params, format);
-  scan_modifiers format_modifiers;
+  specs format_modifiers;
   bool fail = false;
   char* str_p = (char*)str;
   int counter = 0;
   int i = -1;
 
-  reset_scan_mods(&format_modifiers);
+  init_specs(&format_modifiers);
 
   while (format[++i] && !fail) {
     if (format[i] == '%') {
@@ -29,7 +55,7 @@ int s21_sscanf(const char* str, const char* format, ...) {
   return is_blank((char*)str) && !counter ? -1 : counter;
 }
 
-void reset_scan_mods(scan_modifiers* format_modifiers) {
+void init_specs(specs* format_modifiers) {
   format_modifiers->assignment = true;
   format_modifiers->width = 0;
   format_modifiers->length = 0;
@@ -37,7 +63,7 @@ void reset_scan_mods(scan_modifiers* format_modifiers) {
 
 bool process_scan(const char* format, int* i, char** str, const int read,
                   int* counter, va_list* params,
-                  scan_modifiers* format_modifiers) {
+                  specs* format_modifiers) {
   bool before_percent = s21_strchr(" \n\t\r\x0B\f", *i ? format[*i - 1] : 'a');
 
   if (format[++(*i)] >= '0' && format[*i] <= '9') {
@@ -81,13 +107,13 @@ bool process_scan(const char* format, int* i, char** str, const int read,
   } else
     fail = true;
 
-  reset_scan_mods(format_modifiers);
+  init_specs(format_modifiers);
 
   return fail;
 }
 
 bool set_c(char** str, int* counter, va_list* params,
-           scan_modifiers* format_modifiers, bool before_percent) {
+           specs* format_modifiers, bool before_percent) {
   bool fail = false;
 
   if (before_percent) {
@@ -115,7 +141,7 @@ bool set_c(char** str, int* counter, va_list* params,
 }
 
 bool set_di(const char specifier, char** str, int* counter, va_list* params,
-            scan_modifiers* format_modifiers) {
+            specs* format_modifiers) {
   bool fail = false;
   char* str_p;
 
@@ -154,7 +180,7 @@ bool set_di(const char specifier, char** str, int* counter, va_list* params,
 }
 
 bool set_feg(char** str, int* counter, va_list* params,
-             scan_modifiers* format_modifiers) {
+             specs* format_modifiers) {
   bool fail = false;
   char* str_p;
 
@@ -206,7 +232,7 @@ bool set_feg(char** str, int* counter, va_list* params,
 }
 
 bool set_uox(const char specifier, char** str, int* counter, va_list* params,
-             scan_modifiers* format_modifiers) {
+             specs* format_modifiers) {
   bool fail = false;
   char* str_p;
 
@@ -248,7 +274,7 @@ bool set_uox(const char specifier, char** str, int* counter, va_list* params,
 }
 
 bool set_s(char** str, int* counter, va_list* params,
-           scan_modifiers* format_modifiers) {
+           specs* format_modifiers) {
   bool fail = false;
   char* str_p;
 
@@ -288,7 +314,7 @@ bool set_s(char** str, int* counter, va_list* params,
 }
 
 bool set_p(char** str, int* counter, va_list* params,
-           scan_modifiers* format_modifiers) {
+           specs* format_modifiers) {
   bool fail = false;
 
   char* end;
