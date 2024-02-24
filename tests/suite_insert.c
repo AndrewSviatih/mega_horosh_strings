@@ -37,7 +37,7 @@ START_TEST(insert_test3) {
   char str[] = "";
   char src[] = "";
   s21_size_t index = 100;
-  char *expected = NULL;
+  char *expected = S21_NULL;
   char *got = (char *)s21_insert(src, str, index);
   ck_assert_ptr_eq(got, expected);
   if (got) free(got);
@@ -45,10 +45,10 @@ START_TEST(insert_test3) {
 END_TEST
 
 START_TEST(insert_test4) {
-  char *src = NULL;
-  char *str = NULL;
+  char *src = S21_NULL;
+  char *str = S21_NULL;
   s21_size_t index = 100;
-  char *expected = NULL;
+  char *expected = S21_NULL;
   char *got = (char *)s21_insert(src, str, index);
   ck_assert_ptr_eq(got, expected);
   if (got) free(got);
@@ -66,8 +66,19 @@ START_TEST(insert_test5) {
 }
 END_TEST
 
+START_TEST(insert_test6) {
+  char src[] = "Hello!";
+  char str[] = "world";
+  s21_size_t index = 5;
+  char expected[] = "Helloworld!";
+  char *got = (char *)s21_insert(src, str, index);
+  ck_assert_str_eq(got, expected);
+  if (got) free(got);
+}
+END_TEST
+
 START_TEST(insert_str_null) {
-  char *str = NULL;
+  char *str = S21_NULL;
   char src[] = "Space  ";
   s21_size_t index = 6;
   char expected[] = "Space  ";
@@ -87,6 +98,7 @@ Suite *suite_insert(void) {
   tcase_add_test(tc, insert_test3);
   tcase_add_test(tc, insert_test4);
   tcase_add_test(tc, insert_test5);
+  tcase_add_test(tc, insert_test6);
   tcase_add_test(tc, insert_str_null);
 
   suite_add_tcase(s, tc);
