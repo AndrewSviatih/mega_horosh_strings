@@ -63,6 +63,15 @@ START_TEST(to_lower_test5) {
 }
 END_TEST
 
+START_TEST(to_lower_test6) {
+  char *str = S21_NULL;
+  char *expected = S21_NULL;
+  char *got = s21_to_lower(str);
+  ck_assert_ptr_eq(got, expected);
+  if (got) free(got);
+}
+END_TEST
+
 Suite *suite_to_lower(void) {
   Suite *s = suite_create("suite_to_lower");
   TCase *tc = tcase_create("to_lower_tc");
@@ -72,6 +81,7 @@ Suite *suite_to_lower(void) {
   tcase_add_test(tc, to_lower_test3);
   tcase_add_test(tc, to_lower_test4);
   tcase_add_test(tc, to_lower_test5);
+  tcase_add_test(tc, to_lower_test6);
   tcase_add_test(tc, to_lower_test_prekol);
   tcase_add_test(tc, kirill_horosh);
 
