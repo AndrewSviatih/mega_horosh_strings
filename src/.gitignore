@@ -15,18 +15,24 @@
 # Precompiled Headers
 *.gch
 *.pch
+s21_string
+.vscode/
 
 # Libraries
 *.lib
 *.a
 *.la
 *.lo
+.clang-format
 
 # Shared objects (inc. Windows DLLs)
 *.dll
 *.so
 *.so.*
 *.dylib
+*.gcda
+*.info
+*.gcno
 
 # Executables
 *.exe
@@ -50,4 +56,5 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+report/
 test
